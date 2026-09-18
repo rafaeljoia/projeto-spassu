@@ -23,7 +23,7 @@
 - [X] T001 Create root environment templates and Docker Compose files in docker-compose.yml, docker-compose.prod.yml, .env.example, and .env.local
 - [X] T002 [P] Initialize Django backend project structure with dependencies in backend/requirements.txt, backend/manage.py, backend/core/settings.py, backend/core/urls.py, and backend/Dockerfile
 - [X] T003 [P] Initialize React with TypeScript frontend project using Vite in frontend/package.json, frontend/vite.config.ts, frontend/tsconfig.json, frontend/index.html, and frontend/Dockerfile
-- [ ] T004 [P] Configure gitignore rules and code formatting conventions in .gitignore
+- [X] T004 [P] Configure gitignore rules and code formatting conventions in .gitignore
 
 ---
 
