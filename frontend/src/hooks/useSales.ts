@@ -114,16 +114,52 @@ export function useSales() {
     }
   }, []);
 
+  const [selectedSale, setSelectedSale] = useState<SaleDetail | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
+
+  /**
+   * Obtém os detalhes completos de uma venda específica para visualização no modal.
+   */
+  const loadSaleDetail = useCallback(async (id: number): Promise<SaleDetail> => {
+    setIsLoadingDetail(true);
+    setError(null);
+    try {
+      const detail = await saleService.getSaleById(id);
+      setSelectedSale(detail);
+      return detail;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Erro ao buscar detalhes da venda.';
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  }, []);
+
+  /**
+   * Limpa a venda selecionada para fechar o modal/drawer de detalhes.
+   */
+  const clearSelectedSale = useCallback(() => {
+    setSelectedSale(null);
+  }, []);
+
   return {
     sales,
     totalCount,
     isLoading,
     isLoadingFormData,
+    isLoadingDetail,
+    selectedSale,
     error,
     formData,
     loadFormData,
     createSale,
     loadSales,
+    loadSaleDetail,
+    clearSelectedSale,
   };
 }
 

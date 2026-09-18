@@ -85,7 +85,7 @@
 ### Implementation for User Story 2
 - [X] T027 [P] [US2] Create SaleListSerializer and SaleDetailSerializer with formatted customer/salesperson data and item breakdowns in backend/apps/sales/serializers.py
 - [X] T028 [US2] Implement list and retrieve actions in SaleViewSet in backend/apps/sales/views.py
-- [ ] T029 [P] [US2] Implement sales listing fetch logic in custom hook frontend/src/hooks/useSales.ts
+- [X] T029 [P] [US2] Implement sales listing fetch logic in custom hook frontend/src/hooks/useSales.ts
 - [ ] T030 [US2] Implement SalesList page component with table, pt-BR currency formatting, and detail modal/drawer in frontend/src/pages/SalesList/index.tsx and frontend/src/pages/SalesList/SalesList.module.css
 - [ ] T031 [US2] Configure client-side routing in frontend/src/App.tsx connecting Navbar to /vendas and /vendas/nova
 
