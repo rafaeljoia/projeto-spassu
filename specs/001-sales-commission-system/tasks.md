@@ -106,7 +106,7 @@
 ### Implementation for User Story 3
 - [X] T034 [P] [US3] Create CommissionQuerySerializer with date validation (start_date <= end_date) and response serializers in backend/apps/sales/serializers.py
 - [X] T035 [US3] Implement CommissionReportView aggregating total commissions per salesperson and grand total in backend/apps/sales/views.py and map route in backend/apps/sales/urls.py
-- [ ] T036 [P] [US3] Implement commission API service and custom hook useCommissions in frontend/src/services/commissionService.ts and frontend/src/hooks/useCommissions.ts
+- [X] T036 [P] [US3] Implement commission API service and custom hook useCommissions in frontend/src/services/commissionService.ts and frontend/src/hooks/useCommissions.ts
 - [ ] T037 [US3] Implement Commissions report page component with date range filters, salesperson commission table, and grand total card in frontend/src/pages/Commissions/index.tsx and frontend/src/pages/Commissions/Commissions.module.css
 - [ ] T038 [US3] Update client-side routing in frontend/src/App.tsx connecting Navbar to /comissoes
 
