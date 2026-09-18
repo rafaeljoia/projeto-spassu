@@ -58,11 +58,11 @@ class Product(models.Model):
         ordering = ["description"]
         constraints = [
             CheckConstraint(
-                check=Q(unit_price__gt=0),
+                condition=Q(unit_price__gt=0),
                 name="check_product_unit_price_positive",
             ),
             CheckConstraint(
-                check=Q(commission_percentage__gte=Decimal('0.00'))
+                condition=Q(commission_percentage__gte=Decimal('0.00'))
                 & Q(commission_percentage__lte=Decimal('10.00')),
                 name="check_product_commission_range",
             ),
@@ -193,21 +193,21 @@ class DayCommissionRule(models.Model):
         ordering = ["day_of_week"]
         constraints = [
             CheckConstraint(
-                check=Q(day_of_week__gte=0) & Q(day_of_week__lte=6),
+                condition=Q(day_of_week__gte=0) & Q(day_of_week__lte=6),
                 name="check_valid_day_of_week",
             ),
             CheckConstraint(
-                check=Q(min_percentage__gte=Decimal('0.00'))
+                condition=Q(min_percentage__gte=Decimal('0.00'))
                 & Q(min_percentage__lte=Decimal('10.00')),
                 name="check_min_commission_range",
             ),
             CheckConstraint(
-                check=Q(max_percentage__gte=Decimal('0.00'))
+                condition=Q(max_percentage__gte=Decimal('0.00'))
                 & Q(max_percentage__lte=Decimal('10.00')),
                 name="check_max_commission_range",
             ),
             CheckConstraint(
-                check=Q(min_percentage__lte=F('max_percentage')),
+                condition=Q(min_percentage__lte=F('max_percentage')),
                 name="check_min_lte_max_commission",
             ),
         ]
@@ -233,3 +233,124 @@ class DayCommissionRule(models.Model):
             f"{self.get_day_of_week_display()}: "
             f"{self.min_percentage}% a {self.max_percentage}%"
         )
+
+
+class Sale(models.Model):
+    """Representa uma transação de venda realizada na papelaria."""
+
+    invoice_number = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="Número da Nota Fiscal",
+        help_text="Identificador único da nota fiscal informado manualmente",
+    )
+    sold_at = models.DateTimeField(
+        db_index=True,
+        verbose_name="Data e Hora da Venda",
+        help_text="Data e hora em que a venda foi realizada",
+    )
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.PROTECT,
+        related_name="sales",
+        verbose_name="Cliente",
+    )
+    salesperson = models.ForeignKey(
+        Salesperson,
+        on_delete=models.PROTECT,
+        related_name="sales",
+        db_index=True,
+        verbose_name="Vendedor",
+    )
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        verbose_name="Valor Total da Venda (R$)",
+    )
+    total_commission = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        verbose_name="Total de Comissão (R$)",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Criado em",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Atualizado em",
+    )
+
+    class Meta:
+        verbose_name = "Venda"
+        verbose_name_plural = "Vendas"
+        ordering = ["-sold_at", "-created_at"]
+
+    def __str__(self) -> str:
+        return f"NF {self.invoice_number} - {self.customer.name} (R$ {self.total_amount})"
+
+
+class SaleItem(models.Model):
+    """Item de produto comercializado dentro de uma venda."""
+
+    sale = models.ForeignKey(
+        Sale,
+        on_delete=models.CASCADE,
+        related_name="items",
+        verbose_name="Venda",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.PROTECT,
+        related_name="sale_items",
+        verbose_name="Produto",
+    )
+    quantity = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        verbose_name="Quantidade",
+        help_text="Quantidade de itens vendidos (mínimo 1)",
+    )
+    unit_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name="Preço Unitário (R$)",
+        help_text="Valor unitário congelado no momento da venda",
+    )
+    applied_commission_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        verbose_name="Percentual de Comissão Aplicado (%)",
+        help_text="Percentual efetivo após delimitação pelas regras do dia",
+    )
+    total_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name="Valor Total do Item (R$)",
+        help_text="Subtotal do item (quantidade * preço unitário)",
+    )
+    commission_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name="Valor da Comissão (R$)",
+        help_text="Comissão gerada pelo item",
+    )
+
+    class Meta:
+        verbose_name = "Item da Venda"
+        verbose_name_plural = "Itens da Venda"
+        ordering = ["id"]
+        constraints = [
+            CheckConstraint(
+                condition=Q(quantity__gte=1),
+                name="check_sale_item_quantity_positive",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return (
+            f"{self.quantity}x {self.product.description} "
+            f"(R$ {self.total_price})"
+        )
+

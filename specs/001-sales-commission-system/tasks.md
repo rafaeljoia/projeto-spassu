@@ -55,18 +55,18 @@
 **Independent Test**: Registrar uma venda completa contendo produtos com comissões nominais abaixo do piso, acima do teto e dentro dos limites do dia da semana, validando a gravação exata dos valores e comissões calculadas.
 
 ### Tests for User Story 1 ⚠️
-- [ ] T015 [P] [US1] Implement automated unit tests for commission calculation engine (CommissionService) in backend/tests/test_commission_service.py
-- [ ] T016 [P] [US1] Implement automated integration tests for Sale creation REST API endpoint in backend/tests/test_sales_api.py
-- [ ] T017 [P] [US1] Implement unit tests for SaleCreate form and dynamic subtotal calculations in frontend/tests/pages/SaleCreate.test.tsx
+- [X] T015 [P] [US1] Implement automated unit tests for commission calculation engine (CommissionService) in backend/tests/test_commission_service.py
+- [X] T016 [P] [US1] Implement automated integration tests for Sale creation REST API endpoint in backend/tests/test_sales_api.py
+- [X] T017 [P] [US1] Implement unit tests for SaleCreate form and dynamic subtotal calculations in frontend/tests/pages/SaleCreate.test.tsx
 
 ### Implementation for User Story 1
-- [ ] T018 [P] [US1] Create Sale and SaleItem models with Decimal fields, unique invoice_number, and relationships in backend/apps/sales/models.py
-- [ ] T019 [US1] Generate and apply database migrations for Sale and SaleItem in backend/apps/sales/migrations/0002_sale_saleitem.py
-- [ ] T020 [US1] Implement CommissionService with dynamic day-of-week limits and Decimal precision in backend/apps/sales/services/commission_service.py
-- [ ] T021 [P] [US1] Create DRF serializers for Sale creation and SaleItem validation (read-only unit_price, unique invoice_number) in backend/apps/sales/serializers.py
-- [ ] T022 [US1] Implement SaleViewSet create endpoint with atomic transaction in backend/apps/sales/views.py and map routes in backend/apps/sales/urls.py
-- [ ] T023 [P] [US1] Implement frontend sale API service and custom hook useSales in frontend/src/services/saleService.ts and frontend/src/hooks/useSales.ts
-- [ ] T024 [US1] Implement SaleCreate form page component with customer/salesperson select, date, invoice number, and dynamic product item rows in frontend/src/pages/SaleCreate/index.tsx and frontend/src/pages/SaleCreate/SaleCreate.module.css
+- [X] T018 [P] [US1] Create Sale and SaleItem models with Decimal fields, unique invoice_number, and relationships in backend/apps/sales/models.py
+- [X] T019 [US1] Generate and apply database migrations for Sale and SaleItem in backend/apps/sales/migrations/0002_sale_saleitem.py
+- [X] T020 [US1] Implement CommissionService with dynamic day-of-week limits and Decimal precision in backend/apps/sales/services/commission_service.py
+- [X] T021 [P] [US1] Create DRF serializers for Sale creation and SaleItem validation (read-only unit_price, unique invoice_number) in backend/apps/sales/serializers.py
+- [X] T022 [US1] Implement SaleViewSet create endpoint with atomic transaction in backend/apps/sales/views.py and map routes in backend/apps/sales/urls.py
+- [X] T023 [P] [US1] Implement frontend sale API service and custom hook useSales in frontend/src/services/saleService.ts and frontend/src/hooks/useSales.ts
+- [X] T024 [US1] Implement SaleCreate form page component with customer/salesperson select, date, invoice number, and dynamic product item rows in frontend/src/pages/SaleCreate/index.tsx and frontend/src/pages/SaleCreate/SaleCreate.module.css
 
 **Checkpoint**: Neste ponto, o MVP está funcional: vendas podem ser registradas com cálculo dinâmico de comissão e validação de nota fiscal única.
 
