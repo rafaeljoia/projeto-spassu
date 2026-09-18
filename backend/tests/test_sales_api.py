@@ -3,7 +3,14 @@
 from decimal import Decimal
 import pytest
 from rest_framework.test import APIClient
-from apps.sales.models import Customer, DayCommissionRule, Product, Sale, Salesperson
+from apps.sales.models import (
+    Customer,
+    DayCommissionRule,
+    Product,
+    Sale,
+    SaleItem,
+    Salesperson,
+)
 
 
 @pytest.fixture
@@ -213,3 +220,124 @@ class TestSaleCreateEndpoint:
         data = response.json()
         assert "items" in data
         assert "inativo" in str(data["items"])
+
+
+@pytest.mark.django_db
+class TestSaleListEndpoint:
+    """Testes do endpoint GET /api/v1/sales/ (listagem de vendas)."""
+
+    def test_list_sales_empty(self, api_client):
+        """Quando não há vendas, retorna lista vazia e status 200."""
+        response = api_client.get("/api/v1/sales/")
+        assert response.status_code == 200
+        data = response.json()
+        # Se paginado retorna results, senão retorna array direto
+        results = data.get("results", data) if isinstance(data, dict) else data
+        assert len(results) == 0
+
+    def test_list_sales_ordered_and_formatted(self, api_client, initial_data):
+        """Retorna vendas cadastradas ordenadas decrescente por data da venda."""
+        # Venda 1: 2026-09-20
+        sale1 = Sale.objects.create(
+            invoice_number="NF-001",
+            sold_at="2026-09-20T10:00:00Z",
+            customer=initial_data["customer"],
+            salesperson=initial_data["salesperson"],
+            total_amount=Decimal("150.00"),
+            total_commission=Decimal("7.50"),
+        )
+        SaleItem.objects.create(
+            sale=sale1,
+            product=initial_data["prod_notebook"],
+            quantity=3,
+            unit_price=Decimal("50.00"),
+            applied_commission_percentage=Decimal("5.00"),
+            total_price=Decimal("150.00"),
+            commission_amount=Decimal("7.50"),
+        )
+
+        # Venda 2: 2026-09-21 (Mais recente)
+        sale2 = Sale.objects.create(
+            invoice_number="NF-002",
+            sold_at="2026-09-21T14:00:00Z",
+            customer=initial_data["customer"],
+            salesperson=initial_data["salesperson"],
+            total_amount=Decimal("200.00"),
+            total_commission=Decimal("10.00"),
+        )
+        SaleItem.objects.create(
+            sale=sale2,
+            product=initial_data["prod_pen"],
+            quantity=2,
+            unit_price=Decimal("100.00"),
+            applied_commission_percentage=Decimal("5.00"),
+            total_price=Decimal("200.00"),
+            commission_amount=Decimal("10.00"),
+        )
+
+        response = api_client.get("/api/v1/sales/")
+        assert response.status_code == 200
+        data = response.json()
+        results = data.get("results", data) if isinstance(data, dict) else data
+
+        assert len(results) == 2
+        # A venda mais recente (sale2) deve vir primeiro
+        assert results[0]["invoice_number"] == "NF-002"
+        assert results[0]["total_amount"] == "200.00"
+        assert results[0]["total_commission"] == "10.00"
+        assert results[0]["customer"]["name"] == "Empresa Alfa Papéis"
+        assert results[0]["salesperson"]["name"] == "Carlos Eduardo Lima"
+
+        assert results[1]["invoice_number"] == "NF-001"
+        assert results[1]["total_amount"] == "150.00"
+
+
+@pytest.mark.django_db
+class TestSaleRetrieveEndpoint:
+    """Testes do endpoint GET /api/v1/sales/{id}/ (detalhe da venda)."""
+
+    def test_retrieve_sale_success(self, api_client, initial_data):
+        """Retorna os detalhes completos da venda com seus itens e cálculos."""
+        sale = Sale.objects.create(
+            invoice_number="NF-DETALHE",
+            sold_at="2026-09-21T16:00:00Z",
+            customer=initial_data["customer"],
+            salesperson=initial_data["salesperson"],
+            total_amount=Decimal("100.00"),
+            total_commission=Decimal("5.00"),
+        )
+        SaleItem.objects.create(
+            sale=sale,
+            product=initial_data["prod_notebook"],
+            quantity=2,
+            unit_price=Decimal("50.00"),
+            applied_commission_percentage=Decimal("5.00"),
+            total_price=Decimal("100.00"),
+            commission_amount=Decimal("5.00"),
+        )
+
+        response = api_client.get(f"/api/v1/sales/{sale.id}/")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["id"] == sale.id
+        assert data["invoice_number"] == "NF-DETALHE"
+        assert data["customer"]["name"] == "Empresa Alfa Papéis"
+        assert data["salesperson"]["name"] == "Carlos Eduardo Lima"
+        assert data["total_amount"] == "100.00"
+        assert data["total_commission"] == "5.00"
+        assert len(data["items"]) == 1
+
+        item = data["items"][0]
+        assert item["product_code"] == "CAD-001"
+        assert item["quantity"] == 2
+        assert item["unit_price"] == "50.00"
+        assert item["applied_commission_percentage"] == "5.00"
+        assert item["total_price"] == "100.00"
+        assert item["commission_amount"] == "5.00"
+
+    def test_retrieve_sale_not_found(self, api_client):
+        """Retorna 404 ao consultar ID inexistente."""
+        response = api_client.get("/api/v1/sales/99999/")
+        assert response.status_code == 404
+

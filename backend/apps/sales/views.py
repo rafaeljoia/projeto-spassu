@@ -11,6 +11,7 @@ from apps.sales.serializers import (
     ProductSerializer,
     SaleCreateSerializer,
     SaleDetailSerializer,
+    SaleListSerializer,
     SalespersonSerializer,
 )
 
@@ -101,7 +102,7 @@ class DayCommissionRuleViewSet(viewsets.ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Listar vendas realizadas",
         description="Retorna as vendas registradas com valores e totais de comissão.",
-        responses={200: SaleDetailSerializer(many=True)},
+        responses={200: SaleListSerializer(many=True)},
     ),
 )
 class SaleViewSet(viewsets.ModelViewSet):
@@ -118,6 +119,8 @@ class SaleViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "create":
             return SaleCreateSerializer
+        elif self.action == "list":
+            return SaleListSerializer
         return SaleDetailSerializer
 
     def create(self, request, *args, **kwargs):

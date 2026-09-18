@@ -79,12 +79,12 @@
 **Independent Test**: Acessar o menu "Vendas" no frontend e verificar se a listagem exibe todas as vendas com os dados exigidos, formatação correta de moeda e abertura do detalhamento de itens.
 
 ### Tests for User Story 2 ⚠️
-- [ ] T025 [P] [US2] Implement automated integration tests for sales listing and sale detail API endpoints in backend/tests/test_sales_api.py
+- [X] T025 [P] [US2] Implement automated integration tests for sales listing and sale detail API endpoints in backend/tests/test_sales_api.py
 - [ ] T026 [P] [US2] Implement unit tests for SalesList page component and pt-BR currency formatting in frontend/tests/pages/SalesList.test.tsx
 
 ### Implementation for User Story 2
-- [ ] T027 [P] [US2] Create SaleListSerializer and SaleDetailSerializer with formatted customer/salesperson data and item breakdowns in backend/apps/sales/serializers.py
-- [ ] T028 [US2] Implement list and retrieve actions in SaleViewSet in backend/apps/sales/views.py
+- [X] T027 [P] [US2] Create SaleListSerializer and SaleDetailSerializer with formatted customer/salesperson data and item breakdowns in backend/apps/sales/serializers.py
+- [X] T028 [US2] Implement list and retrieve actions in SaleViewSet in backend/apps/sales/views.py
 - [ ] T029 [P] [US2] Implement sales listing fetch logic in custom hook frontend/src/hooks/useSales.ts
 - [ ] T030 [US2] Implement SalesList page component with table, pt-BR currency formatting, and detail modal/drawer in frontend/src/pages/SalesList/index.tsx and frontend/src/pages/SalesList/SalesList.module.css
 - [ ] T031 [US2] Configure client-side routing in frontend/src/App.tsx connecting Navbar to /vendas and /vendas/nova
