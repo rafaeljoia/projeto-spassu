@@ -58,11 +58,11 @@ class Product(models.Model):
         ordering = ["description"]
         constraints = [
             CheckConstraint(
-                check=Q(unit_price__gt=0),
+                condition=Q(unit_price__gt=0),
                 name="check_product_unit_price_positive",
             ),
             CheckConstraint(
-                check=Q(commission_percentage__gte=Decimal('0.00'))
+                condition=Q(commission_percentage__gte=Decimal('0.00'))
                 & Q(commission_percentage__lte=Decimal('10.00')),
                 name="check_product_commission_range",
             ),
@@ -193,21 +193,21 @@ class DayCommissionRule(models.Model):
         ordering = ["day_of_week"]
         constraints = [
             CheckConstraint(
-                check=Q(day_of_week__gte=0) & Q(day_of_week__lte=6),
+                condition=Q(day_of_week__gte=0) & Q(day_of_week__lte=6),
                 name="check_valid_day_of_week",
             ),
             CheckConstraint(
-                check=Q(min_percentage__gte=Decimal('0.00'))
+                condition=Q(min_percentage__gte=Decimal('0.00'))
                 & Q(min_percentage__lte=Decimal('10.00')),
                 name="check_min_commission_range",
             ),
             CheckConstraint(
-                check=Q(max_percentage__gte=Decimal('0.00'))
+                condition=Q(max_percentage__gte=Decimal('0.00'))
                 & Q(max_percentage__lte=Decimal('10.00')),
                 name="check_max_commission_range",
             ),
             CheckConstraint(
-                check=Q(min_percentage__lte=F('max_percentage')),
+                condition=Q(min_percentage__lte=F('max_percentage')),
                 name="check_min_lte_max_commission",
             ),
         ]
@@ -343,7 +343,7 @@ class SaleItem(models.Model):
         ordering = ["id"]
         constraints = [
             CheckConstraint(
-                check=Q(quantity__gte=1),
+                condition=Q(quantity__gte=1),
                 name="check_sale_item_quantity_positive",
             ),
         ]
