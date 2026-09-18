@@ -136,10 +136,10 @@
 
 **Purpose**: Verificação e refinamentos que afetam a qualidade global, conteinerização e documentação.
 
-- [ ] T043 [P] Validate OpenAPI / Swagger UI schemas at /api/docs/ ensuring 100% interactive endpoint documentation in backend/core/urls.py
-- [ ] T044 [P] Create production Dockerfile and Nginx configuration for frontend in frontend/Dockerfile and frontend/nginx.conf
-- [ ] T045 Execute quickstart validation scenarios end-to-end following specs/001-sales-commission-system/quickstart.md
-- [ ] T046 [P] Write comprehensive project README.md with prerequisites, architecture, Docker setup instructions, test commands, and seed data guide in README.md
+- [X] T043 [P] Validate OpenAPI / Swagger UI schemas at /api/docs/ ensuring 100% interactive endpoint documentation in backend/core/urls.py
+- [X] T044 [P] Create production Dockerfile and Nginx configuration for frontend in frontend/Dockerfile and frontend/nginx.conf
+- [X] T045 Execute quickstart validation scenarios end-to-end following specs/001-sales-commission-system/quickstart.md
+- [X] T046 [P] Write comprehensive project README.md with prerequisites, architecture, Docker setup instructions, test commands, and seed data guide in README.md
 
 ---
 

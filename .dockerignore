@@ -1,0 +1,15 @@
+.git
+.gitignore
+.venv/
+node_modules/
+dist/
+build/
+*.log
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+db.sqlite3-journal
+.idea/
+.vscode/
