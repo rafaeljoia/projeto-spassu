@@ -2,7 +2,9 @@
 
 from datetime import date, datetime
 from decimal import Decimal
+from django.core.exceptions import ValidationError
 import pytest
+from apps.sales.admin import DayCommissionRuleForm
 from apps.sales.models import DayCommissionRule, Product
 from apps.sales.services.commission_service import CommissionService
 
@@ -163,3 +165,74 @@ class TestCommissionServiceCalculations:
                 quantity=0,
                 sale_date=datetime.now(),
             )
+
+
+@pytest.mark.django_db
+class TestModelAndAdminValidationRules:
+    """Testes de validação de modelos e formulários do Django Admin (US4)."""
+
+    def test_product_commission_above_10_percent_rejected(self):
+        """Produto com comissão superior a 10.00% deve ser recusado (RN-002)."""
+        product = Product(
+            code="INVALID-HIGH",
+            description="Comissão Alta",
+            unit_price=Decimal("10.00"),
+            commission_percentage=Decimal("15.00"),
+        )
+        with pytest.raises(ValidationError):
+            product.full_clean()
+
+    def test_product_commission_negative_rejected(self):
+        """Produto com comissão negativa deve ser recusado (RN-002)."""
+        product = Product(
+            code="INVALID-NEG",
+            description="Comissão Negativa",
+            unit_price=Decimal("10.00"),
+            commission_percentage=Decimal("-1.00"),
+        )
+        with pytest.raises(ValidationError):
+            product.full_clean()
+
+    def test_day_commission_rule_min_greater_than_max_rejected(self):
+        """Regra de dia com mínimo superior ao máximo deve ser recusada (RN-004)."""
+        rule = DayCommissionRule(
+            day_of_week=DayCommissionRule.DayOfWeek.WEDNESDAY,
+            min_percentage=Decimal("6.00"),
+            max_percentage=Decimal("2.50"),
+        )
+        with pytest.raises(ValidationError):
+            rule.full_clean()
+
+    def test_day_commission_rule_admin_form_validation(self):
+        """Validação no formulário do Django Admin para limites inválidos."""
+        # Mínimo maior que máximo
+        form_invalid_bounds = DayCommissionRuleForm(
+            data={
+                "day_of_week": 0,
+                "min_percentage": "6.00",
+                "max_percentage": "2.50",
+            }
+        )
+        assert not form_invalid_bounds.is_valid()
+        assert "min_percentage" in form_invalid_bounds.errors
+
+        # Mínimo acima de 10%
+        form_above_max = DayCommissionRuleForm(
+            data={
+                "day_of_week": 0,
+                "min_percentage": "11.00",
+                "max_percentage": "12.00",
+            }
+        )
+        assert not form_above_max.is_valid()
+
+        # Válido
+        form_valid = DayCommissionRuleForm(
+            data={
+                "day_of_week": 0,
+                "min_percentage": "2.50",
+                "max_percentage": "6.00",
+            }
+        )
+        assert form_valid.is_valid()
+
