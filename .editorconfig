@@ -1,0 +1,48 @@
+# ==============================================================================
+# PROJETO SPASSU - CONFIGURAÇÃO DE FORMATAÇÃO DE CÓDIGO (EditorConfig)
+# ==============================================================================
+# Padrões aplicados para garantir consistência entre editores e desenvolvedores.
+# ==============================================================================
+
+root = true
+
+# Padrão universal para todos os arquivos
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Backend Python (Conformidade com PEP 8)
+[*.py]
+indent_style = space
+indent_size = 4
+max_line_length = 88
+
+# Frontend TypeScript, JavaScript, JSX, TSX
+[*.{js,jsx,ts,tsx}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# Arquivos de estilização e templates
+[*.{css,scss,html}]
+indent_style = space
+indent_size = 2
+
+# Arquivos de configuração e dados (JSON, YAML, TOML)
+[*.{json,yaml,yml,toml}]
+indent_style = space
+indent_size = 2
+
+# Arquivos de documentação Markdown
+[*.md]
+trim_trailing_whitespace = false
+indent_size = 2
+
+# Arquivos de configuração de containers (Dockerfile, compose)
+[{Dockerfile*,docker-compose*.yml}]
+indent_style = space
+indent_size = 2
