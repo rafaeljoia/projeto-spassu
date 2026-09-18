@@ -65,7 +65,7 @@
 - [X] T020 [US1] Implement CommissionService with dynamic day-of-week limits and Decimal precision in backend/apps/sales/services/commission_service.py
 - [X] T021 [P] [US1] Create DRF serializers for Sale creation and SaleItem validation (read-only unit_price, unique invoice_number) in backend/apps/sales/serializers.py
 - [X] T022 [US1] Implement SaleViewSet create endpoint with atomic transaction in backend/apps/sales/views.py and map routes in backend/apps/sales/urls.py
-- [ ] T023 [P] [US1] Implement frontend sale API service and custom hook useSales in frontend/src/services/saleService.ts and frontend/src/hooks/useSales.ts
+- [X] T023 [P] [US1] Implement frontend sale API service and custom hook useSales in frontend/src/services/saleService.ts and frontend/src/hooks/useSales.ts
 - [ ] T024 [US1] Implement SaleCreate form page component with customer/salesperson select, date, invoice number, and dynamic product item rows in frontend/src/pages/SaleCreate/index.tsx and frontend/src/pages/SaleCreate/SaleCreate.module.css
 
 **Checkpoint**: Neste ponto, o MVP está funcional: vendas podem ser registradas com cálculo dinâmico de comissão e validação de nota fiscal única.
