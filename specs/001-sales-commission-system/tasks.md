@@ -40,7 +40,7 @@
 - [X] T009 Generate and apply initial database migrations for domain models in backend/apps/sales/migrations/0001_initial.py
 - [X] T010 Create management command for database seeding (7 weekday commission rules and initial demo data) in backend/apps/sales/management/commands/seed_data.py
 - [X] T011 [P] Configure frontend HTTP client Axios instance and base TypeScript interfaces in frontend/src/services/api.ts and frontend/src/types/index.ts
-- [ ] T012 [P] Setup global CSS design system tokens and typography matching Spassu Figma prototype in frontend/src/index.css
+- [X] T012 [P] Setup global CSS design system tokens and typography matching Spassu Figma prototype in frontend/src/index.css
 - [ ] T013 [P] Create reusable UI components (Button, Card, Table, Input, Navbar) in frontend/src/components/
 - [ ] T014 [P] Configure Vitest and React Testing Library setup in frontend/vite.config.ts and frontend/tests/setup.ts
 
