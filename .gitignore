@@ -35,6 +35,7 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+.python-version
 
 # Distribuição / empacotamento
 build/
