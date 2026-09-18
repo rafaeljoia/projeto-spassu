@@ -341,3 +341,58 @@ class TestSaleRetrieveEndpoint:
         response = api_client.get("/api/v1/sales/99999/")
         assert response.status_code == 404
 
+
+@pytest.mark.django_db
+class TestReadOnlyCatalogEndpoints:
+    """Testes dos endpoints de leitura de catálogos e cadastros auxiliares (US4)."""
+
+    def test_list_products_returns_active_products_only(
+        self, api_client, initial_data
+    ):
+        """Endpoint /api/v1/products/ deve retornar apenas produtos ativos."""
+        response = api_client.get("/api/v1/products/")
+        assert response.status_code == 200
+        data = response.json()
+        results = data.get("results", data) if isinstance(data, dict) else data
+
+        # Existem 2 produtos ativos no initial_data e 1 inativo
+        codes = [p["code"] for p in results]
+        assert "CAD-001" in codes
+        assert "CAN-002" in codes
+        assert "INA-999" not in codes
+
+    def test_list_customers(self, api_client, initial_data):
+        """Endpoint /api/v1/customers/ lista clientes cadastrados."""
+        response = api_client.get("/api/v1/customers/")
+        assert response.status_code == 200
+        data = response.json()
+        results = data.get("results", data) if isinstance(data, dict) else data
+
+        assert len(results) >= 1
+        assert results[0]["name"] == "Empresa Alfa Papéis"
+        assert results[0]["email"] == "contato@alfa.com.br"
+
+    def test_list_salespeople(self, api_client, initial_data):
+        """Endpoint /api/v1/salespeople/ lista vendedores da papelaria."""
+        response = api_client.get("/api/v1/salespeople/")
+        assert response.status_code == 200
+        data = response.json()
+        results = data.get("results", data) if isinstance(data, dict) else data
+
+        assert len(results) >= 1
+        assert results[0]["name"] == "Carlos Eduardo Lima"
+        assert results[0]["email"] == "carlos.lima@spassu.com.br"
+
+    def test_list_day_commission_rules(self, api_client, initial_data):
+        """Endpoints /api/v1/day-commission-rules/ e /api/v1/commission-rules/ retornam as regras."""
+        for endpoint in ["/api/v1/day-commission-rules/", "/api/v1/commission-rules/"]:
+            response = api_client.get(endpoint)
+            assert response.status_code == 200
+            data = response.json()
+            results = data.get("results", data) if isinstance(data, dict) else data
+            assert len(results) >= 1
+            assert results[0]["day_of_week"] == 0
+            assert results[0]["min_percentage"] == "3.00"
+            assert results[0]["max_percentage"] == "5.00"
+
+

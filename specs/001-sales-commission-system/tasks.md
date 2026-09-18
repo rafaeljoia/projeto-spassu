@@ -121,12 +121,12 @@
 **Independent Test**: Acessar o Django Admin (`/admin/`), criar/editar limites de comissão por dia da semana e produtos, e validar que as regras ajustadas são respeitadas pelo formulário de vendas do frontend e pela API.
 
 ### Tests for User Story 4 ⚠️
-- [ ] T039 [P] [US4] Implement automated tests for DayCommissionRule validation and Product commission bounds in backend/tests/test_commission_service.py
+- [X] T039 [P] [US4] Implement automated tests for DayCommissionRule validation and Product commission bounds in backend/tests/test_commission_service.py
 
 ### Implementation for User Story 4
-- [ ] T040 [P] [US4] Register and configure custom Django Admin interfaces for Product, Customer, and Salesperson in backend/apps/sales/admin.py
-- [ ] T041 [US4] Register and configure custom Django Admin interface for DayCommissionRule with form validation (0% <= min <= max <= 10%) in backend/apps/sales/admin.py
-- [ ] T042 [P] [US4] Expose read-only API endpoints for products, customers, salespeople, and day commission rules in backend/apps/sales/views.py and backend/apps/sales/urls.py
+- [X] T040 [P] [US4] Register and configure custom Django Admin interfaces for Product, Customer, and Salesperson in backend/apps/sales/admin.py
+- [X] T041 [US4] Register and configure custom Django Admin interface for DayCommissionRule with form validation (0% <= min <= max <= 10%) in backend/apps/sales/admin.py
+- [X] T042 [P] [US4] Expose read-only API endpoints for products, customers, salespeople, and day commission rules in backend/apps/sales/views.py and backend/apps/sales/urls.py
 
 **Checkpoint**: Todas as histórias de usuário (US1 a US4) estão completas.
 
