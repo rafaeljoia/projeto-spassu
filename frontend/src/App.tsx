@@ -2,11 +2,15 @@ import { useState, useEffect } from 'react';
 import { Navbar } from './components';
 import { SalesList } from './pages/SalesList';
 import { SaleCreate } from './pages/SaleCreate';
+import { Commissions } from './pages/Commissions';
 
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
-    if (typeof window !== 'undefined' && window.location.pathname === '/vendas/nova') {
-      return '/vendas/nova';
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path === '/vendas/nova' || path === '/comissoes') {
+        return path;
+      }
     }
     return '/vendas';
   });
@@ -21,8 +25,12 @@ export function App() {
   useEffect(() => {
     const handlePopState = () => {
       if (typeof window !== 'undefined') {
-        const path = window.location.pathname === '/vendas/nova' ? '/vendas/nova' : '/vendas';
-        setCurrentPath(path);
+        const path = window.location.pathname;
+        if (path === '/vendas/nova' || path === '/comissoes') {
+          setCurrentPath(path);
+        } else {
+          setCurrentPath('/vendas');
+        }
       }
     };
     window.addEventListener('popstate', handlePopState);
@@ -46,6 +54,8 @@ export function App() {
             onSuccess={() => navigate('/vendas')}
             onCancel={() => navigate('/vendas')}
           />
+        ) : currentPath === '/comissoes' ? (
+          <Commissions />
         ) : (
           <SalesList onNavigateNewSale={() => navigate('/vendas/nova')} />
         )}

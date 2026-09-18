@@ -325,3 +325,52 @@ class SaleCreateSerializer(serializers.Serializer):
         sale.save(update_fields=["total_amount", "total_commission"])
 
         return sale
+
+
+class CommissionQuerySerializer(serializers.Serializer):
+    """Validador dos parâmetros de busca de relatório de comissões por período."""
+
+    start_date = serializers.DateField(
+        required=True,
+        error_messages={
+            "required": "Os parâmetros start_date e end_date são obrigatórios no formato YYYY-MM-DD.",
+            "invalid": "Os parâmetros start_date e end_date são obrigatórios no formato YYYY-MM-DD.",
+        },
+        help_text="Data inicial do período no formato YYYY-MM-DD",
+    )
+    end_date = serializers.DateField(
+        required=True,
+        error_messages={
+            "required": "Os parâmetros start_date e end_date são obrigatórios no formato YYYY-MM-DD.",
+            "invalid": "Os parâmetros start_date e end_date são obrigatórios no formato YYYY-MM-DD.",
+        },
+        help_text="Data final do período no formato YYYY-MM-DD",
+    )
+
+    def validate(self, data):
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError(
+                {"detail": "A data inicial (start_date) não pode ser posterior à data final (end_date)."}
+            )
+        return data
+
+
+class SalespersonCommissionSerializer(serializers.Serializer):
+    """Representação de comissões acumuladas por vendedor no período."""
+
+    salesperson_id = serializers.IntegerField(help_text="ID do vendedor")
+    salesperson_name = serializers.CharField(help_text="Nome do vendedor")
+    sales_count = serializers.IntegerField(help_text="Total de vendas no período")
+    total_commission = serializers.CharField(help_text="Valor acumulado de comissão (ex: 345.80)")
+
+
+class CommissionReportResponseSerializer(serializers.Serializer):
+    """Estrutura da resposta consolidada de comissões do período."""
+
+    start_date = serializers.DateField(help_text="Data inicial apurada")
+    end_date = serializers.DateField(help_text="Data final apurada")
+    salespeople = SalespersonCommissionSerializer(many=True, help_text="Vendedores com comissões no período")
+    grand_total_commission = serializers.CharField(help_text="Total geral consolidado de comissões")
+

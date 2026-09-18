@@ -100,15 +100,15 @@
 **Independent Test**: Consultar intervalos de datas conhecidos e confirmar que apenas vendedores com vendas no intervalo aparecem listados, com valores individuais e somatório geral correspondendo à soma das comissões registradas.
 
 ### Tests for User Story 3 ⚠️
-- [ ] T032 [P] [US3] Implement automated integration tests for commission report endpoint by date range in backend/tests/test_commission_api.py
-- [ ] T033 [P] [US3] Implement unit tests for Commissions report page component and empty/filled states in frontend/tests/pages/Commissions.test.tsx
+- [X] T032 [P] [US3] Implement automated integration tests for commission report endpoint by date range in backend/tests/test_commission_api.py
+- [X] T033 [P] [US3] Implement unit tests for Commissions report page component and empty/filled states in frontend/tests/pages/Commissions.test.tsx
 
 ### Implementation for User Story 3
-- [ ] T034 [P] [US3] Create CommissionQuerySerializer with date validation (start_date <= end_date) and response serializers in backend/apps/sales/serializers.py
-- [ ] T035 [US3] Implement CommissionReportView aggregating total commissions per salesperson and grand total in backend/apps/sales/views.py and map route in backend/apps/sales/urls.py
-- [ ] T036 [P] [US3] Implement commission API service and custom hook useCommissions in frontend/src/services/commissionService.ts and frontend/src/hooks/useCommissions.ts
-- [ ] T037 [US3] Implement Commissions report page component with date range filters, salesperson commission table, and grand total card in frontend/src/pages/Commissions/index.tsx and frontend/src/pages/Commissions/Commissions.module.css
-- [ ] T038 [US3] Update client-side routing in frontend/src/App.tsx connecting Navbar to /comissoes
+- [X] T034 [P] [US3] Create CommissionQuerySerializer with date validation (start_date <= end_date) and response serializers in backend/apps/sales/serializers.py
+- [X] T035 [US3] Implement CommissionReportView aggregating total commissions per salesperson and grand total in backend/apps/sales/views.py and map route in backend/apps/sales/urls.py
+- [X] T036 [P] [US3] Implement commission API service and custom hook useCommissions in frontend/src/services/commissionService.ts and frontend/src/hooks/useCommissions.ts
+- [X] T037 [US3] Implement Commissions report page component with date range filters, salesperson commission table, and grand total card in frontend/src/pages/Commissions/index.tsx and frontend/src/pages/Commissions/Commissions.module.css
+- [X] T038 [US3] Update client-side routing in frontend/src/App.tsx connecting Navbar to /comissoes
 
 **Checkpoint**: Histórias de Usuário 1, 2 e 3 totalmente funcionais e testáveis de ponta a ponta.
 

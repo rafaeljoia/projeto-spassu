@@ -4,6 +4,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.sales.views import (
+    CommissionReportView,
     CustomerViewSet,
     DayCommissionRuleViewSet,
     ProductViewSet,
@@ -22,8 +23,14 @@ router.register(
     DayCommissionRuleViewSet,
     basename="day-commission-rule",
 )
+router.register(
+    r"commission-rules",
+    DayCommissionRuleViewSet,
+    basename="commission-rule",
+)
 router.register(r"sales", SaleViewSet, basename="sale")
 
 urlpatterns = [
+    path("commissions/", CommissionReportView.as_view(), name="commission-report"),
     path("", include(router.urls)),
 ]
