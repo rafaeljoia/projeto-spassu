@@ -121,6 +121,26 @@ class SaleItemDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+class SaleListSerializer(serializers.ModelSerializer):
+    """Serializador para listagem resumida de vendas realizadas na tabela."""
+
+    customer = CustomerSummarySerializer(read_only=True)
+    salesperson = SalespersonSummarySerializer(read_only=True)
+
+    class Meta:
+        model = Sale
+        fields = [
+            "id",
+            "invoice_number",
+            "sold_at",
+            "customer",
+            "salesperson",
+            "total_amount",
+            "total_commission",
+            "created_at",
+        ]
+
+
 class SaleDetailSerializer(serializers.ModelSerializer):
     """Serializador para visualização completa de uma venda com seus itens."""
 
