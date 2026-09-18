@@ -396,3 +396,30 @@ class TestReadOnlyCatalogEndpoints:
             assert results[0]["max_percentage"] == "5.00"
 
 
+@pytest.mark.django_db
+class TestDocumentationEndpoints:
+    """Valida a disponibilidade da documentação interativa OpenAPI / Swagger UI (T043)."""
+
+    def test_openapi_schema_endpoint(self, api_client):
+        """Endpoint /api/schema/ deve retornar o esquema OpenAPI v3."""
+        response = api_client.get("/api/schema/")
+        assert response.status_code == 200
+        content = response.content.decode("utf-8")
+        assert "openapi" in content or "paths" in content
+
+    def test_swagger_ui_endpoint(self, api_client):
+        """Endpoint /api/docs/ deve renderizar a interface interativa Swagger UI."""
+        response = api_client.get("/api/docs/")
+        assert response.status_code == 200
+        content = response.content.decode("utf-8")
+        assert "swagger-ui" in content.lower()
+
+    def test_redoc_endpoint(self, api_client):
+        """Endpoint /api/redoc/ deve renderizar a interface de documentação ReDoc."""
+        response = api_client.get("/api/redoc/")
+        assert response.status_code == 200
+        content = response.content.decode("utf-8")
+        assert "redoc" in content.lower()
+
+
+

@@ -32,5 +32,6 @@ router.register(r"sales", SaleViewSet, basename="sale")
 
 urlpatterns = [
     path("commissions/", CommissionReportView.as_view(), name="commission-report"),
+    path("commissions/report/", CommissionReportView.as_view(), name="commission-report-alias"),
     path("", include(router.urls)),
 ]
