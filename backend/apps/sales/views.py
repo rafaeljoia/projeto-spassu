@@ -1,11 +1,16 @@
-"""Views e ViewSets da API REST para o sistema de vendas e comissões."""
-
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from datetime import datetime, time
+from decimal import Decimal
+from django.db.models import Count, Sum
+from django.utils import timezone
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.sales.models import Customer, DayCommissionRule, Product, Sale, Salesperson
 from apps.sales.serializers import (
+    CommissionQuerySerializer,
+    CommissionReportResponseSerializer,
     CustomerSerializer,
     DayCommissionRuleSerializer,
     ProductSerializer,
@@ -137,3 +142,88 @@ class SaleViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
+
+
+@extend_schema(
+    summary="Consulta de total de comissões por período",
+    description=(
+        "Retorna a consolidação de comissões auferidas exclusivamente por vendedores que tiveram "
+        "vendas no intervalo de datas especificado, juntamente com o somatório geral consolidado."
+    ),
+    parameters=[CommissionQuerySerializer],
+    responses={
+        200: CommissionReportResponseSerializer,
+        400: OpenApiResponse(description="Parâmetros obrigatórios ausentes ou data inicial maior que data final"),
+    },
+)
+class CommissionReportView(APIView):
+    """Endpoint para relatório e apuração gerencial de comissões por período."""
+
+    def get(self, request, *args, **kwargs):
+        query_serializer = CommissionQuerySerializer(data=request.query_params)
+        if not query_serializer.is_valid():
+            errors = query_serializer.errors
+            if "detail" in errors:
+                detail_msg = errors["detail"]
+                if isinstance(detail_msg, list):
+                    detail_msg = detail_msg[0]
+                return Response({"detail": detail_msg}, status=status.HTTP_400_BAD_REQUEST)
+            if "start_date" in errors or "end_date" in errors:
+                return Response(
+                    {
+                        "detail": "Os parâmetros start_date e end_date são obrigatórios no formato YYYY-MM-DD."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if "non_field_errors" in errors:
+                return Response(
+                    {"detail": errors["non_field_errors"][0]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        start_date = query_serializer.validated_data["start_date"]
+        end_date = query_serializer.validated_data["end_date"]
+
+        # Define início às 00:00:00 e término às 23:59:59.999999
+        start_datetime = timezone.make_aware(datetime.combine(start_date, time.min))
+        end_datetime = timezone.make_aware(datetime.combine(end_date, time.max))
+
+        sales_in_period = Sale.objects.filter(
+            sold_at__gte=start_datetime,
+            sold_at__lte=end_datetime,
+        )
+
+        salesperson_aggregates = (
+            sales_in_period.values("salesperson__id", "salesperson__name")
+            .annotate(
+                sales_count=Count("id"),
+                total_commission=Sum("total_commission"),
+            )
+            .order_by("-total_commission", "salesperson__name")
+        )
+
+        salespeople_list = []
+        grand_total = Decimal("0.00")
+
+        for row in salesperson_aggregates:
+            comm = row["total_commission"] or Decimal("0.00")
+            grand_total += comm
+            salespeople_list.append(
+                {
+                    "salesperson_id": row["salesperson__id"],
+                    "salesperson_name": row["salesperson__name"],
+                    "sales_count": row["sales_count"],
+                    "total_commission": f"{comm:.2f}",
+                }
+            )
+
+        response_data = {
+            "start_date": str(start_date),
+            "end_date": str(end_date),
+            "salespeople": salespeople_list,
+            "grand_total_commission": f"{grand_total:.2f}",
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
