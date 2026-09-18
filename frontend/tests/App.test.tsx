@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../src/App';
 import { saleService } from '../src/services/saleService';
+import { commissionService } from '../src/services/commissionService';
 
 vi.mock('../src/services/saleService', () => ({
   saleService: {
@@ -13,6 +14,12 @@ vi.mock('../src/services/saleService', () => ({
     getSalespeople: vi.fn(),
     getDayCommissionRules: vi.fn(),
     createSale: vi.fn(),
+  },
+}));
+
+vi.mock('../src/services/commissionService', () => ({
+  commissionService: {
+    getCommissionReport: vi.fn(),
   },
 }));
 
@@ -29,6 +36,12 @@ describe('App Client-Side Routing', () => {
     vi.mocked(saleService.getCustomers).mockResolvedValue([]);
     vi.mocked(saleService.getSalespeople).mockResolvedValue([]);
     vi.mocked(saleService.getDayCommissionRules).mockResolvedValue([]);
+    vi.mocked(commissionService.getCommissionReport).mockResolvedValue({
+      start_date: '2026-09-01',
+      end_date: '2026-09-30',
+      salespeople: [],
+      grand_total_commission: '0.00',
+    });
   });
 
   it('renderiza por padrão a lista de vendas e a Navbar', async () => {
@@ -70,6 +83,20 @@ describe('App Client-Side Routing', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /vendas realizadas/i })).toBeInTheDocument();
+    });
+  });
+
+  it('navega para o Relatório de Comissões ao clicar no link Comissões da Navbar', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const commissionsLink = screen.getByRole('link', { name: /comissões/i });
+    await user.click(commissionsLink);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: /relatório de comissões/i })
+      ).toBeInTheDocument();
     });
   });
 });
