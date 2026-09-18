@@ -60,8 +60,8 @@
 - [ ] T017 [P] [US1] Implement unit tests for SaleCreate form and dynamic subtotal calculations in frontend/tests/pages/SaleCreate.test.tsx
 
 ### Implementation for User Story 1
-- [ ] T018 [P] [US1] Create Sale and SaleItem models with Decimal fields, unique invoice_number, and relationships in backend/apps/sales/models.py
-- [ ] T019 [US1] Generate and apply database migrations for Sale and SaleItem in backend/apps/sales/migrations/0002_sale_saleitem.py
+- [X] T018 [P] [US1] Create Sale and SaleItem models with Decimal fields, unique invoice_number, and relationships in backend/apps/sales/models.py
+- [X] T019 [US1] Generate and apply database migrations for Sale and SaleItem in backend/apps/sales/migrations/0002_sale_saleitem.py
 - [ ] T020 [US1] Implement CommissionService with dynamic day-of-week limits and Decimal precision in backend/apps/sales/services/commission_service.py
 - [ ] T021 [P] [US1] Create DRF serializers for Sale creation and SaleItem validation (read-only unit_price, unique invoice_number) in backend/apps/sales/serializers.py
 - [ ] T022 [US1] Implement SaleViewSet create endpoint with atomic transaction in backend/apps/sales/views.py and map routes in backend/apps/sales/urls.py
