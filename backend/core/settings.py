@@ -74,13 +74,27 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+DATABASE_URL = config('DATABASE_URL', default='')
 POSTGRES_DB = config('POSTGRES_DB', default='')
 POSTGRES_USER = config('POSTGRES_USER', default='')
 POSTGRES_PASSWORD = config('POSTGRES_PASSWORD', default='')
 POSTGRES_HOST = config('POSTGRES_HOST', default='db')
 POSTGRES_PORT = config('POSTGRES_PORT', default='5432')
 
-if POSTGRES_DB and POSTGRES_USER:
+if DATABASE_URL:
+    import urllib.parse
+    url = urllib.parse.urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': url.path.lstrip('/'),
+            'USER': url.username or '',
+            'PASSWORD': url.password or '',
+            'HOST': url.hostname or '',
+            'PORT': url.port or 5432,
+        }
+    }
+elif POSTGRES_DB and POSTGRES_USER:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -145,6 +159,10 @@ REST_FRAMEWORK = {
     'COERCE_DECIMAL_TO_STRING': True,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
 }
 
 # OpenAPI / Swagger Documentation with drf-spectacular
@@ -154,11 +172,20 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
 }
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://127.0.0.1:3000',
+    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173',
     cast=Csv(),
 )
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+
+# Security Headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+

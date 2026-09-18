@@ -33,16 +33,16 @@
 
 **⚠️ CRITICAL**: Nenhuma história de usuário deve ser iniciada antes da conclusão desta fase.
 
-- [ ] T005 Configure PostgreSQL database connection with environment variable loading in backend/core/settings.py
-- [ ] T006 [P] Configure Django REST Framework and drf-spectacular OpenAPI/Swagger documentation routes in backend/core/settings.py and backend/core/urls.py
-- [ ] T007 [P] Configure CORS headers and security middleware in backend/core/settings.py
-- [ ] T008 [P] Create core domain models (Product, Customer, Salesperson, DayCommissionRule) with Decimal fields and validations in backend/apps/sales/models.py
-- [ ] T009 Generate and apply initial database migrations for domain models in backend/apps/sales/migrations/0001_initial.py
-- [ ] T010 Create management command for database seeding (7 weekday commission rules and initial demo data) in backend/apps/sales/management/commands/seed_data.py
-- [ ] T011 [P] Configure frontend HTTP client Axios instance and base TypeScript interfaces in frontend/src/services/api.ts and frontend/src/types/index.ts
-- [ ] T012 [P] Setup global CSS design system tokens and typography matching Spassu Figma prototype in frontend/src/index.css
-- [ ] T013 [P] Create reusable UI components (Button, Card, Table, Input, Navbar) in frontend/src/components/
-- [ ] T014 [P] Configure Vitest and React Testing Library setup in frontend/vite.config.ts and frontend/tests/setup.ts
+- [X] T005 Configure PostgreSQL database connection with environment variable loading in backend/core/settings.py
+- [X] T006 [P] Configure Django REST Framework and drf-spectacular OpenAPI/Swagger documentation routes in backend/core/settings.py and backend/core/urls.py
+- [X] T007 [P] Configure CORS headers and security middleware in backend/core/settings.py
+- [X] T008 [P] Create core domain models (Product, Customer, Salesperson, DayCommissionRule) with Decimal fields and validations in backend/apps/sales/models.py
+- [X] T009 Generate and apply initial database migrations for domain models in backend/apps/sales/migrations/0001_initial.py
+- [X] T010 Create management command for database seeding (7 weekday commission rules and initial demo data) in backend/apps/sales/management/commands/seed_data.py
+- [X] T011 [P] Configure frontend HTTP client Axios instance and base TypeScript interfaces in frontend/src/services/api.ts and frontend/src/types/index.ts
+- [X] T012 [P] Setup global CSS design system tokens and typography matching Spassu Figma prototype in frontend/src/index.css
+- [X] T013 [P] Create reusable UI components (Button, Card, Table, Input, Navbar) in frontend/src/components/
+- [X] T014 [P] Configure Vitest and React Testing Library setup in frontend/vite.config.ts and frontend/tests/setup.ts
 
 **Checkpoint**: Fundação pronta - a implementação das histórias de usuário pode começar.
 
