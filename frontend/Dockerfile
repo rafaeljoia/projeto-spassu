@@ -29,6 +29,10 @@ RUN npm install
 
 COPY . .
 
+# Permite que o Docker receba a variável do Railway durante o build
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 RUN npm run build
 
 # ==============================================================================
