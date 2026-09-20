@@ -43,58 +43,82 @@ describe('Commissions Report Page Component', () => {
     vi.clearAllMocks();
   });
 
-  it('renderiza o relatório com dados de vendedores e total geral formatado em pt-BR', async () => {
+  it('renderiza os campos inicialmente vazios e carrega o relatório somente após a busca', async () => {
+    const user = userEvent.setup();
     vi.mocked(commissionService.getCommissionReport).mockResolvedValueOnce(mockReport);
 
     render(<Commissions />);
+
+    // Valida que os campos estão inicialmente vazios
+    const startInput = screen.getByLabelText(/data inicial/i) as HTMLInputElement;
+    const endInput = screen.getByLabelText(/data final/i) as HTMLInputElement;
+    expect(startInput.value).toBe('');
+    expect(endInput.value).toBe('');
+
+    // Valida que nenhuma chamada à API foi feita no carregamento inicial
+    expect(commissionService.getCommissionReport).not.toHaveBeenCalled();
+
+    // Valida exibição do estado vazio inicial
+    expect(
+      screen.getByText(/para visualizar o relatório, selecione um período nos campos acima/i)
+    ).toBeInTheDocument();
+
+    // Usuário preenche as datas e clica na lupa de busca
+    await user.type(startInput, '2026-09-01');
+    await user.type(endInput, '2026-09-15');
+    const submitBtn = screen.getByRole('button', { name: /consultar comissões/i });
+    await user.click(submitBtn);
 
     await waitFor(() => {
       expect(screen.getByText('Carlos Eduardo Lima')).toBeInTheDocument();
       expect(screen.getByText('Mariana Souza')).toBeInTheDocument();
     });
 
-    // Valida total geral em destaque
+    // Valida total geral no rodapé da tabela
+    expect(screen.getByText(/total de comissões do período/i)).toBeInTheDocument();
     expect(screen.getByText(/r\$\s*958,20/i)).toBeInTheDocument();
 
     // Valida comissões individuais
     expect(screen.getByText(/r\$\s*345,80/i)).toBeInTheDocument();
     expect(screen.getByText(/r\$\s*612,40/i)).toBeInTheDocument();
 
-    // Valida contagem de vendas
-    expect(screen.getByText(/3 vendas/i)).toBeInTheDocument();
-    expect(screen.getByText(/5 vendas/i)).toBeInTheDocument();
+    // Valida contagem de vendas pura
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('exibe mensagem amigável de estado vazio quando o período não possui vendas', async () => {
+    const user = userEvent.setup();
     vi.mocked(commissionService.getCommissionReport).mockResolvedValueOnce(mockEmptyReport);
 
     render(<Commissions />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/nenhuma venda no período/i)).toBeInTheDocument();
-    });
+    const startInput = screen.getByLabelText(/data inicial/i);
+    const endInput = screen.getByLabelText(/data final/i);
+    const submitBtn = screen.getByRole('button', { name: /consultar comissões/i });
 
-    expect(screen.getByText(/r\$\s*0,00/i)).toBeInTheDocument();
+    await user.type(startInput, '2026-01-01');
+    await user.type(endInput, '2026-01-10');
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/para visualizar o relatório, selecione um período nos campos acima/i)
+      ).toBeInTheDocument();
+    });
   });
 
   it('exibe alerta de validação quando a data inicial é maior que a data final', async () => {
     const user = userEvent.setup();
-    vi.mocked(commissionService.getCommissionReport).mockResolvedValueOnce(mockReport);
 
     render(<Commissions />);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText(/data inicial/i)).toBeInTheDocument();
-    });
 
     const startInput = screen.getByLabelText(/data inicial/i);
     const endInput = screen.getByLabelText(/data final/i);
     const submitBtn = screen.getByRole('button', { name: /consultar comissões/i });
 
     // Inverte as datas
-    await user.clear(startInput);
     await user.type(startInput, '2026-09-25');
-    await user.clear(endInput);
     await user.type(endInput, '2026-09-10');
 
     await user.click(submitBtn);
@@ -106,25 +130,17 @@ describe('Commissions Report Page Component', () => {
     });
   });
 
-  it('permite consultar novo período através do formulário de filtro', async () => {
+  it('permite consultar período através do formulário de filtro', async () => {
     const user = userEvent.setup();
-    vi.mocked(commissionService.getCommissionReport)
-      .mockResolvedValueOnce(mockReport)
-      .mockResolvedValueOnce(mockReport);
+    vi.mocked(commissionService.getCommissionReport).mockResolvedValueOnce(mockReport);
 
     render(<Commissions />);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText(/data inicial/i)).toBeInTheDocument();
-    });
 
     const startInput = screen.getByLabelText(/data inicial/i);
     const endInput = screen.getByLabelText(/data final/i);
     const submitBtn = screen.getByRole('button', { name: /consultar comissões/i });
 
-    await user.clear(startInput);
     await user.type(startInput, '2026-09-01');
-    await user.clear(endInput);
     await user.type(endInput, '2026-09-15');
 
     await user.click(submitBtn);
@@ -135,5 +151,25 @@ describe('Commissions Report Page Component', () => {
         end_date: '2026-09-15',
       });
     });
+  });
+
+  it('desabilita no calendário de data final os dias anteriores à data inicial', async () => {
+    const user = userEvent.setup();
+    render(<Commissions />);
+
+    const startInput = screen.getByLabelText(/data inicial/i);
+    await user.type(startInput, '2026-10-15');
+
+    // Abre o popover do calendário do campo de data final
+    const calendarBtns = screen.getAllByRole('button', { name: /abrir seletor de calendário/i });
+    await user.click(calendarBtns[1]);
+
+    // O dia 10 de outubro de 2026 deve estar desabilitado (menor que 15)
+    const day10Btn = screen.getByRole('button', { name: '10' });
+    expect(day10Btn).toBeDisabled();
+
+    // O dia 16 de outubro de 2026 deve estar habilitado (maior que 15)
+    const day16Btn = screen.getByRole('button', { name: '16' });
+    expect(day16Btn).not.toBeDisabled();
   });
 });

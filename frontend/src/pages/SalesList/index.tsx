@@ -1,381 +1,370 @@
-import { FC, useState, useEffect, useMemo, ChangeEvent } from 'react';
-import { Plus, Search, Eye, X, Receipt, DollarSign, ShoppingBag } from 'lucide-react';
+import { FC, useState, useEffect, Fragment } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ShoppingBag, X } from 'lucide-react';
 import { useSales } from '../../hooks/useSales';
-import {
-  Button,
-  Card,
-  CardBody,
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '../../components';
+import { saleService } from '../../services/saleService';
+import { Toast } from '../../components';
 import { formatCurrency, formatPercentage } from '../../services/api';
+import { SaleDetail, SaleListItem } from '../../types';
+import { EditIcon, TrashIcon } from './SalesListIcons';
 import styles from './SalesList.module.css';
 
 export interface SalesListProps {
   onNavigateNewSale?: () => void;
+  onNavigateEditSale?: (saleId: number, invoiceNumber: string) => void;
 }
 
-export const SalesList: FC<SalesListProps> = ({ onNavigateNewSale }) => {
+export const SalesList: FC<SalesListProps> = ({ onNavigateNewSale, onNavigateEditSale }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const {
     sales,
-    totalCount,
     isLoading,
-    selectedSale,
     error,
     loadSales,
     loadSaleDetail,
-    clearSelectedSale,
   } = useSales();
 
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  // Estado para controlar qual linha de venda está expandida
+  const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null);
+  // Cache dos detalhes completos das vendas para evitar requisições repetidas
+  const [saleDetailsCache, setSaleDetailsCache] = useState<Record<number, SaleDetail>>({});
+  const [loadingSaleId, setLoadingSaleId] = useState<number | null>(null);
+
+  // Estado local para mensagem de Toast flutuante
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Estado para controle do modal de exclusão de venda (Figma #838:287)
+  const [saleToDelete, setSaleToDelete] = useState<number | null>(null);
+
+  // Captura toastMessage transmitido via state do React Router (ex: após criação ou edição)
+  useEffect(() => {
+    const stateToast = (location.state as { toastMessage?: string } | null)?.toastMessage;
+    if (stateToast) {
+      setToastMessage(stateToast);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     loadSales().catch(() => {
-      // Erro gerenciado no hook useSales
+      // Tratado internamente no hook useSales
     });
   }, [loadSales]);
 
-  // Filtro no cliente para resposta instantânea ao digitar
-  const filteredSales = useMemo(() => {
-    if (!searchTerm.trim()) return sales;
-    const term = searchTerm.toLowerCase().trim();
-    return sales.filter((s) => {
-      return (
-        s.invoice_number.toLowerCase().includes(term) ||
-        s.customer.name.toLowerCase().includes(term) ||
-        s.salesperson.name.toLowerCase().includes(term)
-      );
-    });
-  }, [sales, searchTerm]);
-
-  // Cálculos consolidados para os cards de métricas
-  const totalAmountSum = useMemo(() => {
-    return filteredSales.reduce((acc, s) => acc + (parseFloat(s.total_amount) || 0), 0);
-  }, [filteredSales]);
-
-  const totalCommissionSum = useMemo(() => {
-    return filteredSales.reduce((acc, s) => acc + (parseFloat(s.total_commission) || 0), 0);
-  }, [filteredSales]);
-
-  // Formatação amigável de data e hora no padrão pt-BR
+  // Formatação de data/hora no padrão do Figma: 19/10/2022 - 14:25
   const formatDateTime = (isoDate: string): string => {
     try {
       const d = new Date(isoDate);
       if (isNaN(d.getTime())) return isoDate;
-      return d.toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} - ${hours}:${minutes}`;
     } catch {
       return isoDate;
     }
   };
 
-  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+  const handleToggleExpand = async (sale: SaleListItem) => {
+    if (expandedSaleId === sale.id) {
+      setExpandedSaleId(null);
+      return;
+    }
+
+    setExpandedSaleId(sale.id);
+
+    // Se já estiver no cache ou se a venda já possuir os itens embutidos, não precisa buscar novamente
+    if (!saleDetailsCache[sale.id] && !(sale as unknown as SaleDetail).items) {
+      setLoadingSaleId(sale.id);
+      try {
+        const detail = await loadSaleDetail(sale.id);
+        setSaleDetailsCache((prev) => ({ ...prev, [sale.id]: detail }));
+      } catch (err) {
+        console.error('Erro ao carregar itens da venda:', err);
+      } finally {
+        setLoadingSaleId(null);
+      }
+    }
   };
 
-  const handleViewDetail = async (saleId: number) => {
+  const handleEditSale = (sale: SaleListItem) => {
+    if (onNavigateEditSale) {
+      onNavigateEditSale(sale.id, sale.invoice_number);
+    } else {
+      navigate(`/vendas/${sale.id}/editar`, {
+        state: { invoiceNumber: sale.invoice_number },
+      });
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (saleToDelete === null) return;
+    const idToDelete = saleToDelete;
+    setSaleToDelete(null);
     try {
-      await loadSaleDetail(saleId);
-    } catch {
-      // Erro tratado internamente
+      await saleService.deleteSale(idToDelete);
+      await loadSales();
+      setToastMessage('VENDA REMOVIDA COM SUCESSO!');
+    } catch (err) {
+      console.error('Erro ao excluir venda:', err);
     }
   };
 
   return (
-    <div className={`container ${styles.page}`}>
-      {/* Cabeçalho da Página */}
-      <div className={styles.pageHeader}>
-        <div className={styles.titleWrapper}>
-          <h1 className={styles.pageTitle}>Vendas Realizadas</h1>
-          <p className={styles.pageSubtitle}>
-            Histórico completo das operações comerciais e apuração de comissões.
-          </p>
-        </div>
+    <div className={styles.page}>
+      {/* Toast Flutuante no Canto Superior Direito (Figma Aligned) */}
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+
+      {/* Mensagem de Erro se houver */}
+      {error && <div className={styles.errorAlert}>{error}</div>}
+
+      {/* CABEÇALHO DA TABELA (Figma #830:372 & #830:504):
+          Título à esquerda ("Vendas Realizadas") e Botão na extrema direita ("Inserir nova Venda") */}
+      <div className={styles.tableHeaderBar}>
+        <h2 className={styles.tableTitle}>Vendas Realizadas</h2>
         {onNavigateNewSale && (
-          <Button
-            variant="primary"
+          <button
+            type="button"
+            className={styles.insertSaleBtn}
             onClick={onNavigateNewSale}
-            leftIcon={<Plus size={18} />}
           >
-            Nova Venda
-          </Button>
+            Inserir nova Venda
+          </button>
         )}
       </div>
 
-      {/* Métricas Rápidas */}
-      <div className={styles.metricsGrid}>
-        <div className={styles.metricCard}>
-          <div className={styles.metricIcon}>
-            <Receipt size={22} />
+      {/* Caso não existam vendas cadastradas e não esteja carregando */}
+      {!isLoading && sales.length === 0 && (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>
+            <ShoppingBag size={32} />
           </div>
-          <div className={styles.metricContent}>
-            <span className={styles.metricLabel}>Total de Vendas</span>
-            <span className={styles.metricValue}>
-              {isLoading ? '...' : totalCount || filteredSales.length}
-            </span>
-          </div>
+          <h3 className={styles.emptyTitle}>Nenhuma venda cadastrada</h3>
+          <p className={styles.emptyText}>
+            Não existem vendas registradas no momento. Clique no botão acima para registrar a primeira venda.
+          </p>
         </div>
+      )}
 
-        <div className={styles.metricCard}>
-          <div className={styles.metricIcon}>
-            <ShoppingBag size={22} />
-          </div>
-          <div className={styles.metricContent}>
-            <span className={styles.metricLabel}>Total Comercializado</span>
-            <span className={styles.metricValue}>
-              {isLoading ? '...' : formatCurrency(totalAmountSum)}
-            </span>
-          </div>
+      {/* TABELA PRINCIPAL DE VENDAS (Figma #830:2) */}
+      {(isLoading || sales.length > 0) && (
+        <div className={styles.tableWrapper}>
+          <table className={styles.mainTable}>
+            <thead>
+              <tr>
+                <th>Nota Fiscal</th>
+                <th>Cliente</th>
+                <th>Vendedor</th>
+                <th>Data da Venda</th>
+                <th>Valor Total</th>
+                <th>Opções</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sales.map((sale) => {
+                const isExpanded = expandedSaleId === sale.id;
+                const saleDetail = saleDetailsCache[sale.id] || (sale as unknown as SaleDetail);
+                const items = saleDetail?.items || [];
+
+                // Cálculos dos totais da sub-tabela
+                const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
+                const calculatedTotalAmount = items.reduce(
+                  (acc, item) => acc + (parseFloat(item.total_price) || 0),
+                  0
+                );
+                const calculatedTotalCommission = items.reduce(
+                  (acc, item) => acc + (parseFloat(item.commission_amount) || 0),
+                  0
+                );
+
+                const displayTotalAmount =
+                  items.length > 0 ? calculatedTotalAmount : parseFloat(sale.total_amount) || 0;
+                const displayTotalCommission =
+                  items.length > 0 ? calculatedTotalCommission : parseFloat(sale.total_commission) || 0;
+
+                return (
+                  <Fragment key={sale.id}>
+                    {/* Linha Principal da Venda */}
+                    <tr
+                      className={`${styles.dataRow} ${isExpanded ? styles.dataRowExpanded : ''}`}
+                    >
+                      <td>{sale.invoice_number}</td>
+                      <td>{sale.customer?.name || (sale as any).customer_name || '—'}</td>
+                      <td>{sale.salesperson?.name || (sale as any).salesperson_name || '—'}</td>
+                      <td>{formatDateTime(sale.sold_at)}</td>
+                      <td>{formatCurrency(sale.total_amount)}</td>
+                      <td>
+                        <div className={styles.optionsCell}>
+                          {/* Botão "Ver itens" / "Fechar" */}
+                          <button
+                            type="button"
+                            className={styles.toggleItemsBtn}
+                            onClick={() => handleToggleExpand(sale)}
+                            aria-expanded={isExpanded}
+                          >
+                            {isExpanded ? 'Fechar' : 'Ver itens'}
+                          </button>
+
+                          {/* Ícone Editar (Figma #830:393) */}
+                          <button
+                            type="button"
+                            className={styles.actionIconBtn}
+                            onClick={() => handleEditSale(sale)}
+                            aria-label={`Editar venda ${sale.invoice_number}`}
+                            title="Editar venda"
+                          >
+                            <EditIcon size={19} />
+                          </button>
+
+                          {/* Ícone Lixeira (Figma #830:391) */}
+                          <button
+                            type="button"
+                            className={styles.actionIconBtn}
+                            onClick={() => setSaleToDelete(sale.id)}
+                            aria-label={`Excluir venda ${sale.invoice_number}`}
+                            title="Excluir venda"
+                          >
+                            <TrashIcon size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* SUB-TABELA / LINHA EXPANDIDA (Figma #830:366) */}
+                    {isExpanded && (
+                      <tr className={styles.expandedRow}>
+                        <td colSpan={6} style={{ padding: 0 }}>
+                          <div className={styles.subTableContainer}>
+                            {loadingSaleId === sale.id ? (
+                              <div className={styles.subTableLoading}>
+                                Carregando produtos da venda...
+                              </div>
+                            ) : items.length === 0 ? (
+                              <div className={styles.subTableLoading}>
+                                Nenhum item registrado para esta venda.
+                              </div>
+                            ) : (
+                              <table className={styles.subTable}>
+                                <thead>
+                                  <tr>
+                                    <th>Produtos/Serviço</th>
+                                    <th className={styles.alignCenter}>Quantidade</th>
+                                    <th className={styles.alignRight}>Preço unitário</th>
+                                    <th className={styles.alignRight}>Total do Produto</th>
+                                    <th className={styles.alignCenter}>% de Comissão</th>
+                                    <th className={styles.alignRight}>Comissão</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {items.map((item) => (
+                                    <tr key={item.id} className={styles.subTableDataRow}>
+                                      <td>
+                                        {item.product_code
+                                          ? `${item.product_code} - ${item.product_description}`
+                                          : item.product_description}
+                                      </td>
+                                      <td className={styles.alignCenter}>{item.quantity}</td>
+                                      <td className={styles.alignRight}>
+                                        {formatCurrency(item.unit_price)}
+                                      </td>
+                                      <td className={styles.alignRight}>
+                                        {formatCurrency(item.total_price)}
+                                      </td>
+                                      <td className={styles.alignCenter}>
+                                        {formatPercentage(item.applied_commission_percentage)}
+                                      </td>
+                                      <td className={styles.alignRight}>
+                                        {formatCurrency(item.commission_amount)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                                <tfoot>
+                                  {/* Linha Final de "Total da Venda" (Figma #830:549) */}
+                                  <tr className={styles.subTableFooter}>
+                                    <td>Total da Venda</td>
+                                    <td className={styles.alignCenter}>{totalQuantity}</td>
+                                    <td />
+                                    <td className={styles.alignRight}>
+                                      {formatCurrency(displayTotalAmount)}
+                                    </td>
+                                    <td />
+                                    <td className={styles.alignRight}>
+                                      {formatCurrency(displayTotalCommission)}
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              </table>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+      )}
 
-        <div className={styles.metricCard}>
-          <div className={`${styles.metricIcon} ${styles.metricIconGreen}`}>
-            <DollarSign size={22} />
-          </div>
-          <div className={styles.metricContent}>
-            <span className={styles.metricLabel}>Total de Comissões</span>
-            <span className={`${styles.metricValue} ${styles.metricValueGreen}`}>
-              {isLoading ? '...' : formatCurrency(totalCommissionSum)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Barra de Filtro */}
-      <div className={styles.filterBar}>
-        <div className={styles.searchInputWrapper}>
-          <Search size={16} className={styles.searchIcon} />
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Filtrar por NF, cliente ou vendedor..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            aria-label="Filtrar vendas"
-          />
-        </div>
-      </div>
-
-      {/* Tabela de Vendas */}
-      <Card>
-        <CardBody style={{ padding: 0 }}>
-          {isLoading && sales.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyDescription}>Carregando registros de vendas...</p>
-            </div>
-          ) : error && sales.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyDescription} style={{ color: 'var(--color-danger)' }}>
-                {error}
-              </p>
-              <Button variant="outline" size="sm" onClick={() => loadSales()}>
-                Tentar novamente
-              </Button>
-            </div>
-          ) : filteredSales.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>
-                <Receipt size={32} />
-              </div>
-              <h3 className={styles.emptyTitle}>
-                {searchTerm ? 'Nenhuma venda encontrada' : 'Nenhuma venda cadastrada'}
-              </h3>
-              <p className={styles.emptyDescription}>
-                {searchTerm
-                  ? `Nenhum resultado corresponde à busca por "${searchTerm}".`
-                  : 'Comece registrando a primeira venda no sistema para acompanhar as comissões.'}
-              </p>
-              {!searchTerm && onNavigateNewSale && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={onNavigateNewSale}
-                  leftIcon={<Plus size={16} />}
-                >
-                  Cadastrar Primeira Venda
-                </Button>
-              )}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead style={{ width: '18%' }}>Nota Fiscal</TableHead>
-                  <TableHead style={{ width: '20%' }}>Data / Hora</TableHead>
-                  <TableHead style={{ width: '22%' }}>Cliente</TableHead>
-                  <TableHead style={{ width: '20%' }}>Vendedor</TableHead>
-                  <TableHead style={{ width: '10%' }}>Valor Total</TableHead>
-                  <TableHead style={{ width: '10%' }}>Comissão</TableHead>
-                  <TableHead style={{ width: '10%', textAlign: 'center' }}>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell>
-                      <span className={styles.invoiceBadge}>{sale.invoice_number}</span>
-                    </TableCell>
-                    <TableCell>{formatDateTime(sale.sold_at)}</TableCell>
-                    <TableCell>{sale.customer.name}</TableCell>
-                    <TableCell>{sale.salesperson.name}</TableCell>
-                    <TableCell>
-                      <span className={styles.totalAmount}>
-                        {formatCurrency(sale.total_amount)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className={styles.commissionAmount}>
-                        {formatCurrency(sale.total_commission)}
-                      </span>
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewDetail(sale.id)}
-                        aria-label={`Ver detalhes da venda ${sale.invoice_number}`}
-                        leftIcon={<Eye size={16} />}
-                      >
-                        Detalhes
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardBody>
-      </Card>
-
-      {/* Modal de Detalhes da Venda Selecionada */}
-      {selectedSale && (
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (Figma #838:287) */}
+      {saleToDelete !== null && (
         <div
           className={styles.modalOverlay}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
-          onClick={clearSelectedSale}
+          onClick={() => setSaleToDelete(null)}
         >
           <div
-            className={styles.modalContent}
+            className={styles.modalBox}
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.modalHeader}>
-              <h2 id="modal-title" className={styles.modalTitle}>
-                Detalhes da Venda - {selectedSale.invoice_number}
-              </h2>
+              <h3 id="modal-title" className={styles.modalTitle}>
+                Remover Venda
+              </h3>
               <button
                 type="button"
-                className={styles.closeButton}
-                onClick={clearSelectedSale}
-                aria-label="Fechar detalhes"
+                className={styles.modalCloseBtn}
+                onClick={() => setSaleToDelete(null)}
+                aria-label="Fechar"
+                title="Fechar"
               >
-                <X size={20} />
+                <X size={18} strokeWidth={2.5} />
               </button>
             </div>
 
             <div className={styles.modalBody}>
-              {/* Metadados da Venda */}
-              <div className={styles.detailsMetaGrid}>
-                <div className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Nota Fiscal</span>
-                  <span className={styles.metaValue}>{selectedSale.invoice_number}</span>
-                </div>
-                <div className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Data da Venda</span>
-                  <span className={styles.metaValue}>{formatDateTime(selectedSale.sold_at)}</span>
-                </div>
-                <div className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Cliente</span>
-                  <span className={styles.metaValue}>{selectedSale.customer.name}</span>
-                </div>
-                <div className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Vendedor</span>
-                  <span className={styles.metaValue}>{selectedSale.salesperson.name}</span>
-                </div>
-              </div>
-
-              {/* Tabela de Itens da Venda */}
-              <div>
-                <h3
-                  style={{
-                    fontSize: 'var(--font-size-md)',
-                    fontWeight: 'var(--font-semibold)',
-                    marginBottom: 'var(--space-3)',
-                    color: 'var(--color-text-main)',
-                  }}
-                >
-                  Itens da Venda ({selectedSale.items?.length || 0})
-                </h3>
-
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Produto</TableHead>
-                      <TableHead style={{ width: '10%' }}>Qtd</TableHead>
-                      <TableHead style={{ width: '18%' }}>Preço Unitário</TableHead>
-                      <TableHead style={{ width: '16%' }}>% Comissão</TableHead>
-                      <TableHead style={{ width: '18%' }}>Subtotal</TableHead>
-                      <TableHead style={{ width: '18%' }}>Comissão</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedSale.items?.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>
-                          <strong>[{item.product_code}]</strong> {item.product_description}
-                        </TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{formatCurrency(item.unit_price)}</TableCell>
-                        <TableCell>
-                          <span className="badge badge-primary">
-                            {formatPercentage(item.applied_commission_percentage)}
-                          </span>
-                        </TableCell>
-                        <TableCell>{formatCurrency(item.total_price)}</TableCell>
-                        <TableCell>
-                          <span className={styles.commissionAmount}>
-                            {formatCurrency(item.commission_amount)}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Totais do Modal */}
-              <div className={styles.modalTotals}>
-                <div className={styles.modalTotalItem}>
-                  <span className={styles.modalTotalLabel}>Valor Total da Venda</span>
-                  <span className={styles.modalTotalValue}>
-                    {formatCurrency(selectedSale.total_amount)}
-                  </span>
-                </div>
-                <div className={styles.modalTotalItem}>
-                  <span className={styles.modalTotalLabel}>Total de Comissões</span>
-                  <span
-                    className={`${styles.modalTotalValue} ${styles.modalTotalCommission}`}
-                  >
-                    {formatCurrency(selectedSale.total_commission)}
-                  </span>
-                </div>
-              </div>
+              <p className={styles.modalMessage}>
+                Deseja remover esta venda?
+              </p>
             </div>
 
             <div className={styles.modalFooter}>
-              <Button variant="outline" onClick={clearSelectedSale}>
-                Fechar
-              </Button>
+              <button
+                type="button"
+                className={styles.modalCancelBtn}
+                onClick={() => setSaleToDelete(null)}
+              >
+                Não
+              </button>
+              <button
+                type="button"
+                className={styles.modalConfirmBtn}
+                onClick={handleConfirmDelete}
+              >
+                Sim
+              </button>
             </div>
           </div>
         </div>

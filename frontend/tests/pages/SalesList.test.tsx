@@ -1,15 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { SalesList } from '../../src/pages/SalesList';
 import { saleService } from '../../src/services/saleService';
 import { SaleListItem, SaleDetail } from '../../src/types';
+
+const renderWithRouter = (ui: React.ReactElement) =>
+  render(<MemoryRouter>{ui}</MemoryRouter>);
 
 // Mock do serviço de vendas
 vi.mock('../../src/services/saleService', () => ({
   saleService: {
     getSales: vi.fn(),
     getSaleById: vi.fn(),
+    deleteSale: vi.fn(),
   },
 }));
 
@@ -82,16 +87,17 @@ describe('SalesList Page Component', () => {
       results: [],
     });
 
-    render(<SalesList />);
+    renderWithRouter(<SalesList />);
 
     await waitFor(() => {
       expect(screen.getByText(/nenhuma venda cadastrada/i)).toBeInTheDocument();
     });
 
-    expect(screen.getByRole('heading', { name: /vendas realizadas/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /nenhuma venda cadastrada/i })).toBeInTheDocument();
   });
 
-  it('renderiza a tabela com colunas e valores monetários formatados em pt-BR', async () => {
+  it('renderiza o cabeçalho com título à esquerda e botão Inserir nova Venda na direita', async () => {
+    const handleNavigate = vi.fn();
     vi.mocked(saleService.getSales).mockResolvedValueOnce({
       count: 2,
       next: null,
@@ -99,7 +105,27 @@ describe('SalesList Page Component', () => {
       results: mockSales,
     });
 
-    render(<SalesList />);
+    renderWithRouter(<SalesList onNavigateNewSale={handleNavigate} />);
+
+    expect(screen.getByRole('heading', { name: /vendas realizadas/i })).toBeInTheDocument();
+
+    const insertBtn = screen.getByRole('button', { name: /inserir nova venda/i });
+    expect(insertBtn).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.click(insertBtn);
+    expect(handleNavigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('renderiza a tabela com colunas estritas sem a coluna de comissão no nível principal', async () => {
+    vi.mocked(saleService.getSales).mockResolvedValueOnce({
+      count: 2,
+      next: null,
+      previous: null,
+      results: mockSales,
+    });
+
+    renderWithRouter(<SalesList />);
 
     // Aguarda preenchimento da tabela
     await waitFor(() => {
@@ -107,19 +133,29 @@ describe('SalesList Page Component', () => {
       expect(screen.getByText('NF-1002')).toBeInTheDocument();
     });
 
-    // Valida nomes de clientes e vendedores
+    // Colunas estritas da tabela principal
+    expect(screen.getByRole('columnheader', { name: /nota fiscal/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /cliente/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /vendedor/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /data da venda/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /valor total/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /opções/i })).toBeInTheDocument();
+
+    // REGRA ESTRITA: A coluna de Comissão não deve estar no cabeçalho principal
+    expect(screen.queryByRole('columnheader', { name: /^comissão$/i })).not.toBeInTheDocument();
+
+    // Valida dados dos clientes e vendedores
     expect(screen.getByText('Empresa Alfa Papéis')).toBeInTheDocument();
     expect(screen.getByText('Carlos Eduardo Lima')).toBeInTheDocument();
     expect(screen.getByText('Beta Embalagens')).toBeInTheDocument();
     expect(screen.getByText('Mariana Souza')).toBeInTheDocument();
 
-    // Valida formatação de moeda R$ pt-BR
-    expect(screen.getAllByText(/r\$\s*200,00/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/r\$\s*8,00/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/r\$\s*350,50/i).length).toBeGreaterThanOrEqual(1);
+    // Valida formatação monetária pt-BR
+    expect(screen.getByText(/r\$\s*200,00/i)).toBeInTheDocument();
+    expect(screen.getByText(/r\$\s*350,50/i)).toBeInTheDocument();
   });
 
-  it('filtra as vendas ao digitar no campo de busca', async () => {
+  it('expande e fecha a sub-tabela com produtos e totalizador ao clicar em Ver itens / Fechar', async () => {
     const user = userEvent.setup();
     vi.mocked(saleService.getSales).mockResolvedValueOnce({
       count: 2,
@@ -127,57 +163,156 @@ describe('SalesList Page Component', () => {
       previous: null,
       results: mockSales,
     });
+    vi.mocked(saleService.getSaleById).mockResolvedValue(mockSaleDetail);
 
-    render(<SalesList />);
-
-    await waitFor(() => {
-      expect(screen.getByText('NF-1001')).toBeInTheDocument();
-    });
-
-    const searchInput = screen.getByLabelText(/filtrar vendas/i);
-    await user.type(searchInput, 'Beta');
-
-    await waitFor(() => {
-      expect(screen.queryByText('NF-1001')).not.toBeInTheDocument();
-      expect(screen.getByText('NF-1002')).toBeInTheDocument();
-    });
-  });
-
-  it('abre o modal com detalhamento completo dos itens ao clicar em Detalhes', async () => {
-    const user = userEvent.setup();
-    vi.mocked(saleService.getSales).mockResolvedValueOnce({
-      count: 2,
-      next: null,
-      previous: null,
-      results: mockSales,
-    });
-    vi.mocked(saleService.getSaleById).mockResolvedValueOnce(mockSaleDetail);
-
-    render(<SalesList />);
+    renderWithRouter(<SalesList />);
 
     await waitFor(() => {
       expect(screen.getByText('NF-1001')).toBeInTheDocument();
     });
 
-    const detailButtons = screen.getAllByRole('button', { name: /detalhes/i });
-    await user.click(detailButtons[0]);
+    // Botões de Opções da linha
+    const toggleButtons = screen.getAllByRole('button', { name: /ver itens/i });
+    expect(toggleButtons.length).toBe(2);
+
+    // Botões de ação (Edição e Exclusão)
+    expect(screen.getByRole('button', { name: /editar venda nf-1001/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /excluir venda nf-1001/i })).toBeInTheDocument();
+
+    // Expande a primeira venda
+    await user.click(toggleButtons[0]);
 
     await waitFor(() => {
       expect(saleService.getSaleById).toHaveBeenCalledWith(1);
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-      expect(screen.getByText(/detalhes da venda - nf-1001/i)).toBeInTheDocument();
+      // O botão muda para "Fechar"
+      expect(screen.getByRole('button', { name: /fechar/i })).toBeInTheDocument();
     });
 
-    // Valida itens dentro do modal
+    // Colunas da sub-tabela
+    expect(screen.getByRole('columnheader', { name: /produtos\/serviço/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /quantidade/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /preço unitário/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /total do produto/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /% de comissão/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /^comissão$/i })).toBeInTheDocument();
+
+    // Itens da sub-tabela
     expect(screen.getByText(/caderno universitário 200 folhas/i)).toBeInTheDocument();
     expect(screen.getByText(/caneta esferográfica azul/i)).toBeInTheDocument();
 
-    // Fecha o modal
-    const closeBtn = screen.getByRole('button', { name: /fechar detalhes/i });
-    await user.click(closeBtn);
+    // Rodapé de Total da Venda
+    expect(screen.getByText(/total da venda/i)).toBeInTheDocument();
+
+    // Fecha a sub-tabela
+    const fecharBtn = screen.getByRole('button', { name: /fechar/i });
+    await user.click(fecharBtn);
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByText(/caderno universitário 200 folhas/i)).not.toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /ver itens/i }).length).toBe(2);
+    });
+  });
+
+  it('exibe Toast flutuante com mensagem vinda de location.state e limpa o history', async () => {
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
+    vi.mocked(saleService.getSales).mockResolvedValueOnce({
+      count: 2,
+      next: null,
+      previous: null,
+      results: mockSales,
+    });
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/vendas',
+            state: { toastMessage: 'VENDA REALIZADA COM SUCESSO!' },
+          },
+        ]}
+      >
+        <SalesList />
+      </MemoryRouter>
+    );
+
+    // Toast deve estar visível com a mensagem em uppercase
+    expect(screen.getByText('VENDA REALIZADA COM SUCESSO!')).toBeInTheDocument();
+    expect(replaceStateSpy).toHaveBeenCalledWith({}, document.title);
+
+    // Fecha o toast ao clicar no botão X
+    const user = userEvent.setup();
+    const closeBtn = screen.getByRole('button', { name: /fechar notificação/i });
+    await user.click(closeBtn);
+
+    expect(screen.queryByText('VENDA REALIZADA COM SUCESSO!')).not.toBeInTheDocument();
+    replaceStateSpy.mockRestore();
+  });
+
+  it('abre modal de confirmação ao clicar no ícone de lixeira e fecha ao clicar em Não', async () => {
+    const user = userEvent.setup();
+    vi.mocked(saleService.getSales).mockResolvedValue({
+      count: 2,
+      next: null,
+      previous: null,
+      results: mockSales,
+    });
+
+    renderWithRouter(<SalesList />);
+
+    await waitFor(() => {
+      expect(screen.getByText('NF-1001')).toBeInTheDocument();
+    });
+
+    // Clica no botão de excluir venda
+    const deleteBtn = screen.getByRole('button', { name: /excluir venda nf-1001/i });
+    await user.click(deleteBtn);
+
+    // Modal deve abrir com título e mensagem
+    expect(screen.getByRole('heading', { name: /remover venda/i })).toBeInTheDocument();
+    expect(screen.getByText(/deseja remover esta venda\?/i)).toBeInTheDocument();
+    expect(saleService.deleteSale).not.toHaveBeenCalled();
+
+    // Clica em "Não" para cancelar
+    const cancelBtn = screen.getByRole('button', { name: /^não$/i });
+    await user.click(cancelBtn);
+
+    // Modal fechado e API não foi chamada
+    expect(screen.queryByRole('heading', { name: /remover venda/i })).not.toBeInTheDocument();
+    expect(saleService.deleteSale).not.toHaveBeenCalled();
+  });
+
+  it('exclui venda ao confirmar no modal com botão Sim e exibe Toast de sucesso', async () => {
+    const user = userEvent.setup();
+    vi.mocked(saleService.getSales).mockResolvedValue({
+      count: 2,
+      next: null,
+      previous: null,
+      results: mockSales,
+    });
+    vi.mocked(saleService.deleteSale).mockResolvedValue(undefined as any);
+
+    renderWithRouter(<SalesList />);
+
+    await waitFor(() => {
+      expect(screen.getByText('NF-1001')).toBeInTheDocument();
+    });
+
+    // Clica no botão de excluir venda
+    const deleteBtn = screen.getByRole('button', { name: /excluir venda nf-1001/i });
+    await user.click(deleteBtn);
+
+    // Modal aberto
+    expect(screen.getByRole('heading', { name: /remover venda/i })).toBeInTheDocument();
+
+    // Clica em "Sim" para confirmar exclusão
+    const confirmBtn = screen.getByRole('button', { name: /^sim$/i });
+    await user.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(saleService.deleteSale).toHaveBeenCalledWith(1);
+      expect(screen.getByText('VENDA REMOVIDA COM SUCESSO!')).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: /remover venda/i })).not.toBeInTheDocument();
     });
   });
 });
+

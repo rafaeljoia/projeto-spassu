@@ -8,20 +8,8 @@ import { commissionService } from '../services/commissionService';
 import { CommissionReport } from '../types';
 
 export function useCommissions() {
-  const getDefaultDates = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return {
-      start: `${year}-${month}-01`,
-      end: `${year}-${month}-${day}`,
-    };
-  };
-
-  const initial = getDefaultDates();
-  const [startDate, setStartDate] = useState<string>(initial.start);
-  const [endDate, setEndDate] = useState<string>(initial.end);
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [report, setReport] = useState<CommissionReport | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

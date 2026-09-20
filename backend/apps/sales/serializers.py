@@ -192,7 +192,10 @@ class SaleCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "O número da nota fiscal não pode ser vazio."
             )
-        if Sale.objects.filter(invoice_number__iexact=trimmed).exists():
+        qs = Sale.objects.filter(invoice_number__iexact=trimmed)
+        if getattr(self, "instance", None):
+            qs = qs.exclude(id=self.instance.id)
+        if qs.exists():
             raise serializers.ValidationError(
                 "Já existe uma venda com este número de nota fiscal."
             )
@@ -325,6 +328,58 @@ class SaleCreateSerializer(serializers.Serializer):
         sale.save(update_fields=["total_amount", "total_commission"])
 
         return sale
+
+    def update(self, instance, validated_data):
+        """Atualiza a venda recalculando dinamicamente os itens e comissões."""
+        customer = validated_data.get("customer_id", instance.customer)
+        salesperson = validated_data.get("salesperson_id", instance.salesperson)
+        validated_items = validated_data.get("validated_items")
+
+        instance.customer = customer
+        instance.salesperson = salesperson
+
+        if validated_items is not None:
+            instance.items.all().delete()
+            sold_at = instance.sold_at
+            day_of_week = CommissionService.get_day_of_week(sold_at)
+            rule = CommissionService.get_rule_for_day(day_of_week)
+
+            total_amount = Decimal("0.00")
+            total_commission = Decimal("0.00")
+            sale_items_to_create = []
+
+            for item in validated_items:
+                product = item["product"]
+                quantity = item["quantity"]
+
+                calc = CommissionService.calculate_item(
+                    product=product,
+                    quantity=quantity,
+                    sale_date=sold_at,
+                    rule=rule,
+                )
+
+                total_amount += calc.total_price
+                total_commission += calc.commission_amount
+
+                sale_items_to_create.append(
+                    SaleItem(
+                        sale=instance,
+                        product=product,
+                        quantity=quantity,
+                        unit_price=calc.unit_price,
+                        applied_commission_percentage=calc.applied_commission_percentage,
+                        total_price=calc.total_price,
+                        commission_amount=calc.commission_amount,
+                    )
+                )
+
+            SaleItem.objects.bulk_create(sale_items_to_create)
+            instance.total_amount = total_amount
+            instance.total_commission = total_commission
+
+        instance.save()
+        return instance
 
 
 class CommissionQuerySerializer(serializers.Serializer):

@@ -19,6 +19,8 @@
 .env.*.local
 *.env
 *.env.local
+.agents/mcp_config.json
+.agents/*.json
 
 # Whitelist obrigatória: Manter os templates de exemplo versionados
 !.env.example

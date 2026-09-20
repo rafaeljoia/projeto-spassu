@@ -1,0 +1,86 @@
+/* ==============================================================================
+   COMPONENTE TOAST FLUTUANTE (Figma Aligned)
+   Notificação flutuante com fundo verde-água (#A7E3CB), texto escuro em UPPERCASE
+   e botão circular de fechar à direita.
+   ============================================================================== */
+
+.toastContainer {
+  position: absolute;
+  top: 32px;
+  right: 48px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 320px;
+  max-width: 480px;
+  height: 48px;
+  padding: 0 16px 0 24px;
+  background-color: #a7e3cb;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.25s ease-out;
+}
+
+.message {
+  flex: 1;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #134440;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.closeButton:hover {
+  opacity: 0.85;
+  transform: scale(1.1);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid #134440;
+  outline-offset: 2px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .toastContainer {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    min-width: unset;
+    max-width: unset;
+  }
+}

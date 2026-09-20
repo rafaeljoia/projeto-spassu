@@ -1,3 +1,8 @@
+/* ==============================================================================
+   PROJETO SPASSU - COMPONENTE INPUT (Figma Aligned)
+   Variáveis originadas do protótipo Figma (Componente Input / Select 839:607).
+   ============================================================================== */
+
 .container {
   display: flex;
   flex-direction: column;
@@ -6,6 +11,7 @@
 }
 
 .label {
+  font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--text-primary);
@@ -16,6 +22,7 @@
 
 .required {
   color: var(--color-danger);
+  font-weight: var(--font-weight-bold);
 }
 
 .inputWrapper {
@@ -27,29 +34,33 @@
 
 .input {
   width: 100%;
-  height: 40px;
+  height: var(--height-input); /* 38px - padrão Figma */
   padding: 0 var(--spacing-3);
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
   color: var(--text-primary);
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--border-color-input); /* 1px solid #a6a6a6 */
+  border-radius: var(--radius-input); /* 6px - padrão Figma */
   outline: none;
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
 }
 
 .input::placeholder {
-  color: var(--text-muted);
+  color: var(--text-light); /* #a4a4a4 - $neutral/medium Figma */
+  opacity: 1;
 }
 
 .input:focus {
-  border-color: var(--color-primary-500);
+  border-color: var(--color-brand-primary);
   box-shadow: 0 0 0 3px var(--color-primary-focus);
 }
 
 .input:disabled {
-  background-color: var(--color-gray-100);
+  background-color: var(--color-gray-150); /* #f0f0f0 */
+  border-color: var(--border-color);
   cursor: not-allowed;
   color: var(--text-muted);
 }
@@ -59,6 +70,7 @@
 }
 
 .input.hasError:focus {
+  border-color: var(--color-danger);
   box-shadow: 0 0 0 3px var(--color-danger-focus);
 }
 
@@ -89,12 +101,14 @@
 }
 
 .errorText {
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   color: var(--color-danger);
   margin-top: var(--spacing-1);
 }
 
 .helperText {
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   margin-top: var(--spacing-1);

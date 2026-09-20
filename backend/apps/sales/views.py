@@ -119,10 +119,10 @@ class SaleViewSet(viewsets.ModelViewSet):
         .all()
         .order_by("-sold_at", "-created_at")
     )
-    http_method_names = ["get", "post", "head", "options"]
+    http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action in ["create", "update", "partial_update"]:
             return SaleCreateSerializer
         elif self.action == "list":
             return SaleListSerializer
@@ -142,6 +142,17 @@ class SaleViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
+
+    def update(self, request, *args, **kwargs):
+        """Atualiza a venda recalculando dinamicamente os itens e comissões."""
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = SaleCreateSerializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        sale = serializer.save()
+
+        response_serializer = SaleDetailSerializer(sale)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(

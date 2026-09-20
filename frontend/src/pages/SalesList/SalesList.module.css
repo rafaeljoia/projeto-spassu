@@ -1,337 +1,469 @@
+/* ==============================================================================
+   PROJETO SPASSU - LISTAGEM DE VENDAS (Figma Aligned #830:2 & #830:366)
+   Tabela limpa de 6 colunas, cabeçalho alinhado, opções com botão "Ver itens" /
+   "Fechar", ícones de Edição e Lixeira, e sub-tabela expansível com resumo.
+   ============================================================================== */
+
 .page {
-  padding-top: var(--space-8);
-  padding-bottom: var(--space-12);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-}
-
-.pageHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-}
-
-.titleWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.pageTitle {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-main);
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-
-.pageSubtitle {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-/* Métricas Resumo */
-.metricsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-4);
-}
-
-.metricCard {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-5);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  box-shadow: var(--shadow-sm);
-}
-
-.metricIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.metricIconGreen {
-  background-color: #e6f9ed;
-  color: #12b76a;
-}
-
-.metricContent {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.metricLabel {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.metricValue {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-main);
-}
-
-.metricValueGreen {
-  color: #039855;
-}
-
-/* Barra de Filtros e Busca */
-.filterBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-}
-
-.searchInputWrapper {
-  position: relative;
-  max-width: 380px;
   width: 100%;
+  max-width: 1390px; /* Largura padrão tela Figma #830:2 */
+  margin: 0 auto;
+  padding: 32px 48px;
 }
 
-.searchIcon {
-  position: absolute;
-  left: var(--space-3);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-muted);
-  pointer-events: none;
+/* ------------------------------------------------------------------------------
+   CABEÇALHO DA TABELA (Figma #830:372 & #830:504)
+   Título à esquerda e Botão de Ação na extrema direita
+   ------------------------------------------------------------------------------ */
+.tableHeaderBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
 }
 
-.searchInput {
-  width: 100%;
-  padding: var(--space-2) var(--space-3) var(--space-2) 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  background-color: var(--color-surface);
-  color: var(--color-text-main);
-  outline: none;
-  transition: border-color var(--transition-fast);
+.tableTitle {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 24px; /* Exato Figma style_bc2a9795 */
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  line-height: 1.2;
 }
 
-.searchInput:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-}
-
-/* Badge de Nota Fiscal */
-.invoiceBadge {
+.insertSaleBtn {
   display: inline-flex;
   align-items: center;
-  font-weight: var(--font-semibold);
-  font-size: var(--font-size-xs);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-bg-subtle);
-  color: var(--color-text-main);
-  border: 1px solid var(--color-border);
-  font-family: monospace;
+  justify-content: center;
+  height: 43px; /* Exato Figma #830:504 */
+  padding: 11px 23px; /* Exato Figma #830:505 */
+  background-color: var(--color-brand-primary, #00A38C); /* Exato Figma $XPTO/brand/primary */
+  color: #FFFFFF;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px; /* Exato Figma style_ed6ed2b2 */
+  font-weight: 600;
+  border: none;
+  border-radius: 3px; /* Exato Figma borderRadius: 3px */
+  box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.05); /* Exato Figma boxShadow */
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
 }
 
-.commissionAmount {
-  font-weight: var(--font-semibold);
-  color: #039855;
+.insertSaleBtn:hover {
+  background-color: var(--color-brand-primary-dark, #00585E);
 }
 
-.totalAmount {
-  font-weight: var(--font-semibold);
-  color: var(--color-text-main);
+.insertSaleBtn:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
 }
 
-/* Estado Vazio */
+/* ------------------------------------------------------------------------------
+   TABELA PRINCIPAL (Figma #830:2 & #830:366)
+   Colunas: Nota Fiscal | Cliente | Vendedor | Data da Venda | Valor Total | Opções
+   ------------------------------------------------------------------------------ */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  background-color: transparent;
+}
+
+.mainTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.mainTable thead tr {
+  border-bottom: 1px solid #888888; /* Exato Figma stroke #888888 / fill_44ad129d */
+}
+
+.mainTable th {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 18px; /* Exato Figma style_4dcbf8e5 */
+  font-weight: 600;
+  color: #000000;
+  padding: 12px 16px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.mainTable td {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px; /* Exato Figma style_fca1e048 */
+  color: #000000;
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.dataRow {
+  border-bottom: 1px solid #888888; /* Linha divisória fina #888888 */
+  transition: background-color var(--transition-fast);
+}
+
+.dataRow:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dataRowExpanded {
+  background-color: #F9FBFB;
+  border-bottom: none;
+}
+
+/* Coluna Opções (Ver itens / Fechar, Editar, Lixeira) */
+.optionsCell {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  white-space: nowrap;
+}
+
+.toggleItemsBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px; /* Exato Figma style_af116fbb */
+  font-weight: 600;
+  color: var(--color-brand-primary, #00A38C); /* Exato Figma $XPTO/brand/primary */
+  cursor: pointer;
+  transition: opacity var(--transition-fast), text-decoration var(--transition-fast);
+}
+
+.toggleItemsBtn:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.actionIconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.actionIconBtn:hover {
+  transform: scale(1.1);
+  opacity: 0.85;
+}
+
+.actionIconBtn:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+}
+
+/* ------------------------------------------------------------------------------
+   SUB-TABELA / LINHA EXPANDIDA (Figma Component #830:366)
+   Colunas: Produtos/Serviço | Quantidade | Preço unitário | Total do Produto |
+   % de Comissão | Comissão
+   ------------------------------------------------------------------------------ */
+.subTableContainer {
+  background-color: #F8F9FA;
+  padding: 24px 32px 32px 32px;
+  border-bottom: 2px solid #888888;
+}
+
+.subTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.subTable th {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px; /* Exato Figma style_ed6ed2b2 */
+  font-weight: 600;
+  color: #000000;
+  padding: 8px 12px;
+  border-bottom: 1px solid #D1D5DB;
+  text-align: left;
+}
+
+.subTable td {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px; /* Exato Figma style_fca1e048 */
+  color: #000000;
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+.subTableDataRow {
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.alignCenter {
+  text-align: center;
+}
+
+.alignRight {
+  text-align: right;
+}
+
+/* Linha Final de Totalização ("Total da Venda") */
+.subTableFooter {
+  border-top: 2px solid var(--color-brand-primary-dark, #00585E);
+}
+
+.subTableFooter td {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px; /* Exato Figma style_82b01544 */
+  font-weight: 700; /* Roboto Bold */
+  color: var(--color-brand-primary-dark, #00585E); /* Exato Figma $XPTO/brand/primary-dark */
+  padding: 14px 12px;
+}
+
+.subTableLoading {
+  padding: 24px;
+  text-align: center;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------------------
+   ESTADO VAZIO (EMPTY STATE)
+   ------------------------------------------------------------------------------ */
 .emptyState {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-12) var(--space-4);
+  padding: 64px 24px;
   text-align: center;
-  gap: var(--space-4);
+  background-color: #FFFFFF;
+  border-radius: var(--radius-card);
+  border: 1px dashed var(--border-color);
+  margin-top: 24px;
 }
 
 .emptyIcon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-bg-subtle);
-  color: var(--color-text-muted);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--color-primary-50);
+  color: var(--color-brand-primary);
+  margin-bottom: var(--spacing-4);
 }
 
 .emptyTitle {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-main);
-  margin: 0;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0 0 8px 0;
 }
 
-.emptyDescription {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  max-width: 400px;
-  margin: 0;
+.emptyText {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 15px;
+  color: var(--text-muted);
+  max-width: 420px;
+  margin: 0 0 24px 0;
 }
 
-/* Modal de Detalhes da Venda */
+/* Estado de Erro */
+.errorAlert {
+  background-color: #FEF2F2;
+  border: 1px solid #F87171;
+  border-radius: var(--radius-card);
+  padding: var(--spacing-4);
+  color: #B91C1C;
+  font-family: 'Roboto', var(--font-sans);
+  margin-bottom: var(--spacing-6);
+}
+
+@media (max-width: 992px) {
+  .page {
+    padding: 24px 16px;
+  }
+  .optionsCell {
+    gap: 12px;
+  }
+}
+
+/* ------------------------------------------------------------------------------
+   MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (Figma #838:287)
+   Cores e tipografia alinhadas rigorosamente com os tokens do sistema:
+   - Divisórias: var(--color-gray-200, #dadada) (fill_5bcace3a)
+   - Título e textos: var(--color-gray-800, #42474a) ($text/01, $neutral/dark)
+   - Botão Não: borda #00585e, texto var(--color-brand-primary-light, #2b7d83)
+   - Botão Sim: fundo e borda var(--color-brand-primary-light, #2b7d83), texto #ffffff
+   ------------------------------------------------------------------------------ */
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: var(--space-4);
+  z-index: 9999;
+  padding: 16px;
+  animation: fadeIn 0.15s ease-out;
 }
 
-.modalContent {
-  background-color: var(--color-surface);
-  border-radius: var(--radius-xl);
-  max-width: 800px;
+.modalBox {
+  background-color: #ffffff;
   width: 100%;
-  max-height: 90vh;
+  max-width: 485px; /* Exato Figma #838:288 (485px) */
+  border-radius: 4px;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.2); /* Exato Figma #838:289 */
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: var(--shadow-xl);
-  border: 1px solid var(--color-border);
+  animation: scaleUp 0.15s ease-out;
 }
 
 .modalHeader {
-  padding: var(--space-5) var(--space-6);
-  border-bottom: 1px solid var(--color-border);
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-gray-200, #dadada); /* Exato Figma #838:303 fill_5bcace3a */
 }
 
 .modalTitle {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-main);
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 18px; /* Exato Figma #838:304 */
+  font-weight: 600; /* Roboto SemiBold */
+  color: var(--color-gray-800, #42474a); /* Exato Figma $text/01 */
   margin: 0;
+  line-height: 24px;
 }
 
-.closeButton {
-  background: none;
+.modalCloseBtn {
+  background: transparent;
   border: none;
-  color: var(--color-text-muted);
+  color: var(--color-gray-800, #42474a); /* Exato Figma #838:302 */
   cursor: pointer;
-  padding: var(--space-1);
-  border-radius: var(--radius-md);
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  border-radius: 4px;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
 }
 
-.closeButton:hover {
-  background-color: var(--color-bg-subtle);
-  color: var(--color-text-main);
+.modalCloseBtn:hover {
+  opacity: 0.8;
+  background-color: var(--color-gray-150, #f0f0f0);
+}
+
+.modalCloseBtn:focus-visible {
+  outline: 2px solid var(--color-brand-primary-light, #2b7d83);
+  outline-offset: 1px;
 }
 
 .modalBody {
-  padding: var(--space-6);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
+  padding: 36px 20px; /* Alinhado ao Figma #838:298 */
+  border-bottom: 1px solid var(--color-gray-200, #dadada); /* Exato Figma #838:297 fill_5bcace3a */
 }
 
-.detailsMetaGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-4);
-  background-color: var(--color-bg-subtle);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-}
-
-.metaItem {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.metaLabel {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.05em;
-}
-
-.metaValue {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-main);
-}
-
-.modalTotals {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-6);
-  padding: var(--space-4);
-  background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-}
-
-.modalTotalItem {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.modalTotalLabel {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  font-weight: var(--font-semibold);
-}
-
-.modalTotalValue {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-main);
-}
-
-.modalTotalCommission {
-  color: #039855;
+.modalMessage {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px; /* Exato Figma #838:300 */
+  font-weight: 400; /* Roboto Regular */
+  color: var(--color-gray-800, #42474a); /* Exato Figma $neutral/dark */
+  margin: 0;
+  line-height: 22px;
 }
 
 .modalFooter {
-  padding: var(--space-4) var(--space-6);
-  border-top: 1px solid var(--color-border);
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  background-color: var(--color-bg-subtle);
+  gap: 12px;
+  padding: 14px 20px; /* Exato Figma #838:290 */
+  background-color: #ffffff;
 }
+
+/* Botão "Não" (#838:294 a #838:296) */
+.modalCancelBtn {
+  height: 36px;
+  width: 97px; /* Exato Figma #838:294 (97.25px x 36.36px) */
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 15px;
+  font-weight: 600; /* Roboto SemiBold */
+  color: var(--color-brand-primary-light, #2b7d83); /* Exato Figma #838:296 $XPTO/brand/primary-light */
+  background-color: #ffffff;
+  border: 1px solid var(--color-brand-primary, #00585e); /* Exato Figma #838:295 $XPTO/brand/primary */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modalCancelBtn:hover {
+  background-color: var(--color-brand-primary-subtle, #e6eff0);
+  border-color: var(--color-brand-primary, #00585e);
+  color: var(--color-brand-primary, #00585e);
+}
+
+.modalCancelBtn:focus-visible {
+  outline: 2px solid var(--color-brand-primary-light, #2b7d83);
+  outline-offset: 2px;
+}
+
+/* Botão "Sim" (#838:291 a #838:293) */
+.modalConfirmBtn {
+  height: 36px;
+  width: 96px; /* Exato Figma #838:291 (96.26px x 36.36px) */
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 15px;
+  font-weight: 600; /* Roboto SemiBold */
+  color: var(--color-white, #ffffff); /* Exato Figma #838:293 $text/inverse */
+  background-color: var(--color-brand-primary-light, #2b7d83); /* Exato Figma #838:292 $XPTO/brand/primary-light */
+  border: 1px solid var(--color-brand-primary-light, #2b7d83);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modalConfirmBtn:hover {
+  background-color: var(--color-brand-primary, #00585e);
+  border-color: var(--color-brand-primary, #00585e);
+}
+
+.modalConfirmBtn:focus-visible {
+  outline: 2px solid var(--color-brand-primary, #00585e);
+  outline-offset: 2px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

@@ -1,24 +1,29 @@
+/* ==============================================================================
+   PROJETO SPASSU - COMPONENTE CARD (Figma Aligned)
+   Superfícies, sombras e bordas extraídas do protótipo Figma.
+   ============================================================================== */
+
 .card {
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  border: var(--border-width) solid var(--border-color); /* 1px solid #d7d7d7 */
+  border-radius: var(--radius-lg); /* 6px */
+  box-shadow: var(--shadow-sm); /* 0px 2px 2px 1px rgba(0, 0, 0, 0.08) */
   transition: box-shadow var(--transition-fast);
   overflow: hidden;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md); /* 0px 4px 4px 0px rgba(0, 0, 0, 0.12) */
 }
 
 .highlight {
-  border-color: var(--color-primary-300);
-  background: linear-gradient(to bottom right, var(--bg-surface), var(--color-primary-50));
+  border-color: var(--color-brand-primary-light);
+  background: linear-gradient(135deg, var(--bg-surface), var(--color-primary-50));
 }
 
 .successHighlight {
-  border-color: var(--color-success-100);
-  background: linear-gradient(to bottom right, var(--bg-surface), var(--color-success-50));
+  border-color: var(--color-brand-secondary);
+  background: linear-gradient(135deg, var(--bg-surface), var(--color-success-50));
 }
 
 .header {
@@ -26,17 +31,20 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-4) var(--spacing-6);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: var(--border-width) solid var(--border-color);
 }
 
 .title {
+  font-family: var(--font-sans);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+  color: var(--text-heading);
   margin: 0;
 }
 
 .subtitle {
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   margin-top: var(--spacing-1);
@@ -52,6 +60,6 @@
   justify-content: flex-end;
   gap: var(--spacing-3);
   padding: var(--spacing-4) var(--spacing-6);
-  border-top: 1px solid var(--border-color);
-  background-color: var(--color-gray-50);
+  border-top: var(--border-width) solid var(--border-color);
+  background-color: var(--bg-page);
 }

@@ -1,7 +1,7 @@
 /* ==============================================================================
-   PROJETO SPASSU - CADASTRO DE VENDAS (Figma Aligned #833:2)
-   Layout pixel-perfect em duas colunas sem card global:
-   Produtos (esquerda) e Dados da Venda (direita).
+   PROJETO SPASSU - EDIÇÃO DE VENDAS (Figma Aligned #833:66)
+   Layout pixel-perfect em duas colunas idêntico ao SaleCreate:
+   Produtos (esquerda) e Dados da Venda (direita) com data desabilitada.
    ============================================================================== */
 
 .page {
@@ -18,8 +18,7 @@
   margin-bottom: var(--spacing-2);
 }
 
-/* Layout de Duas Colunas do Figma (#833:2 - Produtos à esquerda, Dados à direita)
-   Sem contorno ou sombra de Card global, plano no canvas */
+/* Layout de Duas Colunas do Figma (#833:66 - Produtos à esquerda, Dados à direita) */
 .twoColumnLayout {
   display: grid;
   grid-template-columns: 1fr 1px 440px;
@@ -35,7 +34,7 @@
   }
 }
 
-/* Coluna da Esquerda: Produtos (#833:8) */
+/* Coluna da Esquerda: Produtos (#833:72) */
 .leftColumn {
   padding-right: var(--spacing-8);
   display: flex;
@@ -51,13 +50,13 @@
 
 .sectionTitle {
   font-family: var(--font-sans);
-  font-size: var(--font-size-2xl); /* 24px - "Produtos" no Figma #833:8 */
+  font-size: var(--font-size-2xl); /* 24px - "Produtos" no Figma */
   font-weight: var(--font-weight-bold);
-  color: var(--text-heading); /* #333333 */
+  color: var(--text-heading);
   margin: 0;
 }
 
-/* Barra Superior de Adição de Itens (Figma #833:38, #833:39, #833:42) */
+/* Barra Superior de Adição de Itens */
 .productFormRow {
   display: flex;
   align-items: flex-end;
@@ -87,9 +86,9 @@
 
 .label {
   font-family: var(--font-sans);
-  font-size: 15px; /* 15px - padrão Figma #833:38 e #833:39 */
+  font-size: 15px; /* 15px - padrão Figma */
   font-weight: var(--font-weight-normal);
-  color: var(--text-heading); /* #000000 / #333333 */
+  color: var(--text-heading);
   margin: 0;
 }
 
@@ -101,14 +100,14 @@
 
 .productSelect {
   width: 100%;
-  height: var(--height-input-lg); /* 44px - padrão Figma #833:40 */
+  height: var(--height-input-lg); /* 44px */
   padding: 0 var(--spacing-3);
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   color: var(--text-primary);
   background-color: var(--bg-surface);
-  border: var(--border-width) solid var(--border-color-input); /* 1px solid #a6a6a6 */
-  border-radius: var(--radius-button); /* 3px */
+  border: var(--border-width) solid var(--border-color-input);
+  border-radius: var(--radius-button);
   outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   box-sizing: border-box;
@@ -121,14 +120,14 @@
 
 .quantityInput {
   width: 100%;
-  height: var(--height-input-lg); /* 44px - padrão Figma #833:41 */
+  height: var(--height-input-lg); /* 44px */
   text-align: center;
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   color: var(--text-primary);
   background-color: var(--bg-surface);
   border: var(--border-width) solid var(--border-color-input);
-  border-radius: var(--radius-button); /* 3px */
+  border-radius: var(--radius-button);
   outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   box-sizing: border-box;
@@ -140,12 +139,12 @@
 }
 
 .addProductButton {
-  min-width: 110px; /* 110px - padrão Figma #833:42 */
+  min-width: 110px;
   height: var(--height-input-lg); /* 44px */
   font-family: var(--font-sans);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
-  border-radius: var(--radius-button); /* 3px */
+  border-radius: var(--radius-button);
 }
 
 .itemError {
@@ -155,7 +154,7 @@
   margin-top: -var(--spacing-3);
 }
 
-/* Tabela de Produtos Confirmados (#833:9 a #833:14) */
+/* Tabela de Produtos */
 .itemsTableWrapper {
   flex: 1;
   overflow-x: auto;
@@ -179,7 +178,7 @@
 .thAction {
   padding: var(--spacing-3) var(--spacing-2);
   font-family: var(--font-sans);
-  font-size: var(--font-size-lg); /* 18px - Figma #833:9, #833:12, #833:13, #833:14 */
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--text-heading);
   white-space: nowrap;
@@ -207,7 +206,7 @@
 .tdAction {
   padding: var(--spacing-4) var(--spacing-2);
   font-family: var(--font-sans);
-  font-size: 15px; /* 15px - Figma #833:80 a #833:84 */
+  font-size: 15px;
   color: var(--text-heading);
 }
 
@@ -219,57 +218,65 @@
   text-align: center;
 }
 
-.tdUnitPrice,
+.tdUnitPrice {
+  color: var(--text-secondary);
+}
+
 .tdTotal {
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
 }
 
 .tdAction {
   text-align: center;
 }
 
-/* Botão de Exclusão de Item (Figma: ellipse #833:83 com #EEC5C4) */
-.deleteItemButton {
+.removeButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-danger-bg); /* #EEC5C4 */
-  color: var(--color-danger);
+  border-radius: 50%;
+  background-color: #EEC5C4; /* Exato Figma #833:83 */
   border: none;
+  color: #C0392B;
   cursor: pointer;
-  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
 }
 
-.deleteItemButton:hover:not(:disabled) {
-  background-color: var(--color-danger-100);
+.removeButton:hover {
+  background-color: #E8B4B3;
   transform: scale(1.08);
 }
 
-.emptyTable {
-  padding: var(--spacing-8) var(--spacing-4);
-  text-align: center;
-  font-family: var(--font-sans);
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
+.removeButton:focus-visible {
+  outline: 2px solid var(--color-danger);
 }
 
-/* Divisória Vertical Central (Figma #833:51 line em x:870) */
+.emptyTableMessage {
+  padding: var(--spacing-8) var(--spacing-4);
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+}
+
+/* Divisor Vertical do Figma (#833:28) */
 .verticalDivider {
   width: 1px;
-  background-color: var(--color-gray-200); /* #C4C4C4 / #D7D7D7 */
+  background-color: #D1D5DB;
+  margin: 0;
+  height: 100%;
 }
 
 @media (max-width: 1080px) {
   .verticalDivider {
-    width: 100%;
-    height: 1px;
+    display: none;
   }
 }
 
-/* Coluna da Direita: Dados da Venda (#833:37) */
+/* Coluna da Direita: Dados da Venda (#833:101) */
 .rightColumn {
   padding-left: var(--spacing-8);
   display: flex;
@@ -285,9 +292,9 @@
 
 .salesDataTitle {
   font-family: var(--font-sans);
-  font-size: var(--font-size-2xl); /* 24px - "Dados da venda" no Figma #833:37 */
+  font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  color: var(--text-heading); /* #333333 */
+  color: var(--text-heading);
   margin: 0;
 }
 
@@ -300,14 +307,14 @@
 .fieldInput,
 .fieldSelect {
   width: 100%;
-  height: var(--height-input-lg); /* 44px - padrão Figma #833:54 / #853:57 */
+  height: var(--height-input-lg); /* 44px */
   padding: 0 var(--spacing-3);
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   color: var(--text-primary);
   background-color: var(--bg-surface);
-  border: var(--border-width) solid var(--border-color-input); /* 1px solid #a6a6a6 */
-  border-radius: var(--radius-button); /* 3px */
+  border: var(--border-width) solid var(--border-color-input);
+  border-radius: var(--radius-button);
   outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   box-sizing: border-box;
@@ -319,13 +326,22 @@
   box-shadow: 0 0 0 3px var(--color-primary-focus);
 }
 
+/* Input desabilitado (Data e Hora da Venda) - Figma #853:239 */
+.fieldInput:disabled,
+.fieldInput[readonly] {
+  background-color: #F8F8F8;
+  color: #686868;
+  cursor: not-allowed;
+  border-color: #CCCCCC;
+}
+
 .helperText {
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
-/* Seção de Totais da Venda (#833:10, #833:11) */
+/* Seção de Totais da Venda */
 .totalsSection {
   margin-top: auto;
   padding-top: var(--spacing-6);
@@ -343,58 +359,88 @@
 
 .totalLabel {
   font-family: var(--font-sans);
-  font-size: var(--font-size-lg); /* 18px - "Valor total da venda:" no Figma #833:10 */
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--text-heading);
 }
 
 .totalValue {
   font-family: var(--font-sans);
-  font-size: var(--font-size-3xl); /* 28px - "R$ 0,00" no Figma #833:11 */
+  font-size: 28px; /* 28px - Figma #833:75 */
   font-weight: var(--font-weight-bold);
-  color: var(--color-brand-primary); /* #00585E */
-  line-height: var(--line-height-tight);
+  color: var(--color-brand-primary);
+  letter-spacing: -0.02em;
 }
 
-.commissionRow {
+.commissionInfo {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: var(--spacing-2) var(--spacing-3);
+  background-color: var(--color-primary-50);
+  border-radius: var(--radius-button);
 }
 
 .commissionLabel {
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-medium);
 }
 
 .commissionValue {
   font-family: var(--font-sans);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-brand-primary-dark);
   font-weight: var(--font-weight-bold);
-  color: var(--color-brand-secondary-dark); /* #0C6B45 */
 }
 
-/* Barra de Ações (Figma #833:45 & #833:48) */
-.actionsBar {
+.rateNotice {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Ações Inferiores (Cancelar e Finalizar) */
+.formActions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--spacing-4);
   padding-top: var(--spacing-4);
 }
 
 .cancelButton {
-  min-width: 110px; /* 110px - Figma #833:45 */
-  height: var(--height-input-lg); /* 44px */
+  min-width: 110px; /* 110px - Figma #833:109 */
+  height: 44px;
 }
 
 .submitButton {
-  min-width: 137px; /* 137px - Figma #833:48 */
-  height: var(--height-input-lg); /* 44px */
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  min-width: 137px; /* 137px - Figma #834:330 */
+  height: 44px;
+}
+
+.alertError {
+  background-color: #FEF2F2;
+  border: 1px solid #F87171;
+  border-radius: var(--radius-button);
+  padding: var(--spacing-4);
+  color: #B91C1C;
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.alertSuccess {
+  background-color: #F0FDF4;
+  border: 1px solid #86EFAC;
+  border-radius: var(--radius-button);
+  padding: var(--spacing-4);
+  color: #166534;
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
 }

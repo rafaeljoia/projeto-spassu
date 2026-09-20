@@ -1,41 +1,27 @@
-import { useState, useEffect } from 'react';
+import { FC, useState, useCallback } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { Navbar } from './components';
 import { SalesList } from './pages/SalesList';
 import { SaleCreate } from './pages/SaleCreate';
+import { SaleEdit } from './pages/SaleEdit';
 import { Commissions } from './pages/Commissions';
 
-export function App() {
-  const [currentPath, setCurrentPath] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname;
-      if (path === '/vendas/nova' || path === '/comissoes') {
-        return path;
-      }
-    }
-    return '/vendas';
-  });
+const AppContent: FC = () => {
+  const navigate = useNavigate();
+  const [editTitle, setEditTitle] = useState<string | undefined>(undefined);
 
-  const navigate = (path: string) => {
-    setCurrentPath(path);
-    if (typeof window !== 'undefined') {
-      window.history.pushState({}, '', path);
-    }
-  };
-
-  useEffect(() => {
-    const handlePopState = () => {
-      if (typeof window !== 'undefined') {
-        const path = window.location.pathname;
-        if (path === '/vendas/nova' || path === '/comissoes') {
-          setCurrentPath(path);
-        } else {
-          setCurrentPath('/vendas');
-        }
-      }
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+  const handleTitleChange = useCallback((title: string) => {
+    setEditTitle((prev) => (prev === title ? prev : title));
   }, []);
+
+  const handleEditSuccess = useCallback(() => {
+    setEditTitle(undefined);
+  }, []);
+
+  const handleEditCancel = useCallback(() => {
+    setEditTitle(undefined);
+    navigate('/vendas');
+  }, [navigate]);
 
   return (
     <div
@@ -46,21 +32,54 @@ export function App() {
         flexDirection: 'column',
       }}
     >
-      <Navbar activePath={currentPath} onNavigate={navigate} />
+      <Navbar
+        onNavigate={(path) => {
+          setEditTitle(undefined);
+          navigate(path);
+        }}
+        title={editTitle}
+      />
 
       <main style={{ flex: 1 }}>
-        {currentPath === '/vendas/nova' ? (
-          <SaleCreate
-            onSuccess={() => navigate('/vendas')}
-            onCancel={() => navigate('/vendas')}
+        <Routes>
+          <Route
+            path="/"
+            element={<SalesList onNavigateNewSale={() => navigate('/vendas/nova')} />}
           />
-        ) : currentPath === '/comissoes' ? (
-          <Commissions />
-        ) : (
-          <SalesList onNavigateNewSale={() => navigate('/vendas/nova')} />
-        )}
+          <Route
+            path="/vendas"
+            element={<SalesList onNavigateNewSale={() => navigate('/vendas/nova')} />}
+          />
+          <Route
+            path="/vendas/nova"
+            element={
+              <SaleCreate
+                onCancel={() => navigate('/vendas')}
+              />
+            }
+          />
+          <Route
+            path="/vendas/:id/editar"
+            element={
+              <SaleEdit
+                onSuccess={handleEditSuccess}
+                onCancel={handleEditCancel}
+                onTitleChange={handleTitleChange}
+              />
+            }
+          />
+          <Route path="/comissoes" element={<Commissions />} />
+        </Routes>
       </main>
     </div>
+  );
+};
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 

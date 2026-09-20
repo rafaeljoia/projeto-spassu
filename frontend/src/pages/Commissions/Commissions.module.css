@@ -1,210 +1,425 @@
+/* ==============================================================================
+   PROJETO SPASSU - RELATÓRIO DE COMISSÕES (Figma #839:464, #839:957)
+   Estrutura minimalista: Título e filtros na mesma linha, remoção de cards,
+   estado vazio centralizado em texto plano e tabela com rodapé de total geral.
+   ============================================================================== */
+
 .page {
-  padding-top: var(--space-8);
-  padding-bottom: var(--space-12);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+  width: 100%;
+  max-width: 1390px;
+  margin: 0 auto;
+  padding: 32px 48px;
 }
 
-.pageHeader {
+/* ------------------------------------------------------------------------------
+   1. CABEÇALHO E FILTROS (Tudo na mesma linha)
+   ------------------------------------------------------------------------------ */
+.headerBar {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
 }
 
 .pageTitle {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-main);
-  letter-spacing: -0.02em;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-brand-primary, #00585e);
   margin: 0;
-}
-
-.pageSubtitle {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-/* Formulário de Filtro por Período */
-.filterCard {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-sm);
-}
-
-.filterForm {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-4);
-  flex-wrap: wrap;
+  line-height: 1.2;
 }
 
 .filterGroup {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-width: 200px;
-  flex: 1;
+  align-items: center;
+  gap: 14px;
 }
 
-.label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-main);
+/* ------------------------------------------------------------------------------
+   DATEPICKER E CALENDÁRIO POPOVER (Figma #839:823)
+   ------------------------------------------------------------------------------ */
+.datePickerContainer {
+  position: relative;
+}
+
+.dateInputWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 224px; /* Exato Figma #839:671 (224px) */
+  height: 38px; /* Exato Figma #839:671 (38px) */
+  padding: 0 12px 0 16px;
+  background-color: #ffffff;
+  border: 1px solid #a6a6a6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.dateInputWrapper:hover {
+  border-color: #777777;
+}
+
+.inputFocused {
+  border-color: var(--color-brand-primary, #00585e);
+  box-shadow: 0 0 0 2px var(--color-primary-focus, rgba(0, 88, 94, 0.2));
 }
 
 .dateInput {
   width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-main);
-  background-color: var(--color-surface);
+  border: none;
+  background: transparent;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 14px;
+  color: #000000;
   outline: none;
-  transition: border-color var(--transition-fast);
+  padding: 0;
 }
 
-.dateInput:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+.dateInput::placeholder {
+  color: #a4a4a4;
+  font-size: 14px;
 }
 
-.filterAction {
-  padding-bottom: 1px;
-}
-
-/* Card de Destaque - Total Geral */
-.grandTotalCard {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  color: #ffffff;
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
+.calendarIconBtn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--color-brand-primary, #00585e);
+  cursor: pointer;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Popover do Calendário (#839:823) */
+.calendarPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1000;
+  width: 246px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 14px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.calendarPopover::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 32px;
+  width: 10px;
+  height: 10px;
+  background-color: #ffffff;
+  transform: rotate(45deg);
+  border-top: 1px solid #e0e0e0;
+  border-left: 1px solid #e0e0e0;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.monthTitle {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: #212529;
+  text-transform: lowercase;
+}
+
+.navArrows {
+  display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  box-shadow: var(--shadow-md);
+  gap: 4px;
 }
 
-.grandTotalContent {
+.arrowBtn {
+  background: transparent;
+  border: none;
+  padding: 2px;
+  color: #555555;
+  cursor: pointer;
+  border-radius: 4px;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.grandTotalLabel {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.9;
+.arrowBtn:hover {
+  background-color: #f0f0f0;
+  color: #000000;
 }
 
-.grandTotalValue {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-extrabold);
-  letter-spacing: -0.02em;
-}
-
-.grandTotalPeriod {
-  font-size: var(--font-size-xs);
-  opacity: 0.85;
-  margin-top: var(--space-1);
-}
-
-.grandTotalBadge {
-  background-color: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.weekdaysRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
   gap: 2px;
+  margin-bottom: 6px;
+  text-align: center;
 }
 
-.grandTotalBadgeLabel {
-  font-size: var(--font-size-xs);
-  opacity: 0.85;
-  text-transform: uppercase;
-  font-weight: var(--font-medium);
+.weekdayName {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: #888888;
 }
 
-.grandTotalBadgeValue {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-bold);
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
 }
 
-/* Mensagens de Alerta */
-.alertError {
-  background-color: var(--color-danger-light);
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--font-size-sm);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-/* Valor de Comissão na Tabela */
-.commissionCell {
-  font-weight: var(--font-bold);
-  color: #039855;
-  font-size: var(--font-size-md);
-}
-
-.salesCountBadge {
+.dayButton {
+  width: 28px;
+  height: 27px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  background-color: var(--color-bg-subtle);
-  font-weight: var(--font-semibold);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-main);
-  border: 1px solid var(--color-border);
+  background: transparent;
+  border: none;
+  border-radius: 5px; /* Exato Figma EL-f18efbfa */
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 13px;
+  color: #333333;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.12s ease;
 }
 
-/* Estado Vazio */
-.emptyState {
-  display: flex;
-  flex-direction: column;
+.dayButton:hover:not(.selectedDay):not(:disabled) {
+  background-color: #f0f7f7;
+}
+
+.selectedDay {
+  background-color: var(--color-brand-primary, #00585e) !important; /* Exato Figma EL-f18efbfa */
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.disabledDay {
+  color: #c4c4c4 !important;
+  background: transparent !important;
+  cursor: not-allowed !important;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.dimmedDay {
+  width: 28px;
+  height: 27px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-12) var(--space-4);
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 13px;
+  color: #b8b8b8;
+  user-select: none;
+}
+
+/* Botão de Busca (#839:1072) */
+.searchButton {
+  width: 44px;
+  height: 38px;
+  background-color: var(--color-brand-primary, #00585e);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+.searchButton:hover:not(:disabled) {
+  background-color: var(--color-brand-primary-dark, #003538);
+}
+
+.searchButton:focus-visible {
+  outline: 2px solid var(--color-brand-primary, #00585e);
+  outline-offset: 2px;
+}
+
+.searchButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------------------
+   3. ESTADO VAZIO (Empty State)
+   ------------------------------------------------------------------------------ */
+.emptyStateContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  padding: 48px 24px;
   text-align: center;
-  gap: var(--space-3);
 }
 
-.emptyIcon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-bg-subtle);
-  color: var(--color-text-muted);
+.emptyStateText {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 15px;
+  color: #42474a;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------------------
+   4. TABELA DE RESULTADOS (Figma #839:957)
+   ------------------------------------------------------------------------------ */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tableHeaderRow {
+  border-bottom: 1px solid #888888; /* Exato Figma #839:971 */
+}
+
+.tableHeaderRow th {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 18px; /* Exato Figma style_4dcbf8e5 */
+  font-weight: 600;
+  color: #000000;
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+
+.thCode {
+  width: 80px;
+}
+
+.thSalesperson {
+  text-align: left;
+}
+
+.thSalesCount {
+  width: 180px;
+  text-align: center;
+}
+
+.thCommission {
+  width: 220px;
+  text-align: right;
+}
+
+.tableRow {
+  border-bottom: 1px solid #d7d7d7; /* Exato Figma #839:978 */
+}
+
+.tableRow td {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px; /* Exato Figma style_fca1e048 */
+  color: #000000;
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.tdCode {
+  color: #000000;
+}
+
+.tdSalesperson {
+  color: #000000;
+}
+
+.tdSalesCount {
+  text-align: center;
+  color: #000000;
+}
+
+.tdCommission {
+  text-align: right;
+  color: #000000;
+}
+
+/* Rodapé da Tabela: Total de Comissões do Período (#839:991) */
+.tableFooterRow {
+  border-bottom: 1px solid #888888;
+}
+
+.footerLabel {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px;
+  font-weight: 700; /* Bold */
+  color: #000000;
+  padding: 16px;
+}
+
+.footerValue {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 16px;
+  font-weight: 700; /* Bold */
+  color: #000000;
+  text-align: right;
+  padding: 16px;
+  white-space: nowrap;
+}
+
+/* Alerta de Erro */
+.alertError {
+  background-color: #fef2f2;
+  border: 1px solid #f87171;
+  border-radius: var(--radius-card);
+  padding: var(--spacing-4);
+  color: #b91c1c;
+  font-family: 'Roboto', var(--font-sans);
+  margin-bottom: var(--spacing-6);
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: var(--spacing-2);
 }
 
-.emptyTitle {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-main);
-  margin: 0;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.emptyDescription {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  max-width: 420px;
-  margin: 0;
+@media (max-width: 768px) {
+  .page {
+    padding: 24px 16px;
+  }
+  .headerBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .filterGroup {
+    width: 100%;
+    flex-direction: column;
+  }
+  .dateInputWrapper {
+    width: 100%;
+  }
 }

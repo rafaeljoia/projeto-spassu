@@ -94,6 +94,36 @@ export function useSales() {
   }, []);
 
   /**
+   * Atualiza uma venda existente via PUT.
+   */
+  const updateSale = useCallback(async (id: number, payload: SaleCreatePayload): Promise<SaleDetail> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const updated = await saleService.updateSale(id, payload);
+      return updated;
+    } catch (err: unknown) {
+      let errorMessage = 'Erro ao atualizar a venda.';
+      if (axios.isAxiosError(err) && err.response?.data) {
+        const data = err.response.data as Record<string, unknown>;
+        if (data.invoice_number && Array.isArray(data.invoice_number)) {
+          errorMessage = data.invoice_number[0];
+        } else if (data.items) {
+          errorMessage = Array.isArray(data.items)
+            ? data.items[0]
+            : String(data.items);
+        } else if (data.detail) {
+          errorMessage = String(data.detail);
+        }
+      }
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  /**
    * Busca a lista de vendas realizadas.
    */
   const loadSales = useCallback(async (page: number = 1, search?: string) => {
@@ -157,6 +187,7 @@ export function useSales() {
     formData,
     loadFormData,
     createSale,
+    updateSale,
     loadSales,
     loadSaleDetail,
     clearSelectedSale,

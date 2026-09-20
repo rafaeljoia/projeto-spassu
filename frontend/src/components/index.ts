@@ -19,3 +19,7 @@ export type { TableProps } from './Table';
 
 export { Navbar } from './Navbar';
 export type { NavbarProps, NavItem } from './Navbar';
+
+export { Toast } from './Toast';
+export type { ToastProps } from './Toast';
+

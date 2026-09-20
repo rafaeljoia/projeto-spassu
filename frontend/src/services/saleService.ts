@@ -24,6 +24,14 @@ export const saleService = {
   },
 
   /**
+   * Atualiza uma venda existente com itens via PUT.
+   */
+  async updateSale(id: number, payload: SaleCreatePayload): Promise<SaleDetail> {
+    const response = await api.put<SaleDetail>(`/sales/${id}/`, payload);
+    return response.data;
+  },
+
+  /**
    * Lista vendas com suporte a paginação e busca.
    */
   async getSales(params?: {
@@ -74,6 +82,13 @@ export const saleService = {
   async getDayCommissionRules(): Promise<DayCommissionRule[]> {
     const response = await api.get<DayCommissionRule[]>('/day-commission-rules/');
     return response.data;
+  },
+
+  /**
+   * Remove uma venda registrada pelo ID.
+   */
+  async deleteSale(id: number): Promise<void> {
+    await api.delete(`/sales/${id}/`);
   },
 };
 

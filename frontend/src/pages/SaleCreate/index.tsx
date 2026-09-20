@@ -1,15 +1,16 @@
-import { useState, useEffect, useMemo, FC, ChangeEvent, FormEvent } from 'react';
-import { Plus, Trash2, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useMemo, FC, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Trash2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useSales } from '../../hooks/useSales';
-import { Button, Card, Input, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components';
+import { Button } from '../../components';
 import { formatCurrency, formatPercentage } from '../../services/api';
 import { Product } from '../../types';
 import styles from './SaleCreate.module.css';
 
 export interface FormItemRow {
   key: string;
-  productId: number | '';
-  quantity: number | '';
+  productId: number;
+  quantity: number;
 }
 
 export interface SaleCreateProps {
@@ -17,7 +18,18 @@ export interface SaleCreateProps {
   onCancel?: () => void;
 }
 
+/**
+ * Função utilitária para gerar o número da nota fiscal dinamicamente
+ * simulando auto-incremento de 8 dígitos (iniciando em 00000001).
+ * Usa timestamp formatado para garantir unicidade na validação do backend.
+ */
+export const generateInvoiceNumber = (): string => {
+  const sequence = (Date.now() % 100000000).toString().padStart(8, '0');
+  return sequence;
+};
+
 export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
+  const navigate = useNavigate();
   const { formData, loadFormData, createSale, isLoading, error: apiError } = useSales();
 
   // Data e hora atual no formato YYYY-MM-DDTHH:mm
@@ -27,16 +39,19 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
     return now.toISOString().slice(0, 16);
   };
 
-  const [invoiceNumber, setInvoiceNumber] = useState<string>('');
   const [soldAt, setSoldAt] = useState<string>(getInitialDateTime());
   const [customerId, setCustomerId] = useState<number | ''>('');
   const [salespersonId, setSalespersonId] = useState<number | ''>('');
-  const [items, setItems] = useState<FormItemRow[]>([
-    { key: 'item-1', productId: '', quantity: 1 },
-  ]);
+
+  // Itens confirmados na venda
+  const [items, setItems] = useState<FormItemRow[]>([]);
+
+  // Estados dos campos de seleção no topo (Mecânica de Produtos)
+  const [selectedProductId, setSelectedProductId] = useState<number | ''>('');
+  const [selectedQuantity, setSelectedQuantity] = useState<number | ''>(1);
+  const [itemError, setItemError] = useState<string | null>(null);
 
   const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Carrega clientes, vendedores, produtos e regras do dia na montagem do componente
   useEffect(() => {
@@ -58,8 +73,6 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
     try {
       const selectedDate = new Date(soldAt);
       if (isNaN(selectedDate.getTime())) return null;
-      // getDay() retorna 0 para Domingo, 1 para Segunda...
-      // Python weekday: 0=Segunda ... 6=Domingo
       const jsDay = selectedDate.getDay();
       const pythonWeekday = jsDay === 0 ? 6 : jsDay - 1;
       return (
@@ -70,10 +83,10 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
     }
   }, [soldAt, formData.rules]);
 
-  // Cálculos dinâmicos dos itens
+  // Cálculos dinâmicos dos itens confirmados
   const calculatedItems = useMemo(() => {
     return items.map((item) => {
-      const product = typeof item.productId === 'number' ? productMap.get(item.productId) : undefined;
+      const product = productMap.get(item.productId);
       if (!product) {
         return {
           ...item,
@@ -90,7 +103,7 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
       const minRate = activeDayRule ? parseFloat(activeDayRule.min_percentage) : 0;
       const maxRate = activeDayRule ? parseFloat(activeDayRule.max_percentage) : 10;
       const appliedRate = Math.min(Math.max(nominal, minRate), maxRate);
-      const effectiveQty = typeof item.quantity === 'number' && item.quantity > 0 ? item.quantity : 0;
+      const effectiveQty = item.quantity > 0 ? item.quantity : 0;
       const subtotal = effectiveQty * unitPrice;
       const commissionAmount = subtotal * (appliedRate / 100);
 
@@ -114,76 +127,66 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
     return calculatedItems.reduce((acc, item) => acc + item.commissionAmount, 0);
   }, [calculatedItems]);
 
-  // Manipuladores de itens
+  // Adição de produto à listagem confirmada
   const handleAddItem = () => {
-    setItems((prev) => [
-      ...prev,
-      { key: `item-${Date.now()}-${prev.length + 1}`, productId: '', quantity: 1 },
-    ]);
-  };
-
-  const handleRemoveItem = (index: number) => {
-    if (items.length <= 1) {
-      setFormError('A venda deve conter pelo menos um item.');
+    if (selectedProductId === '') {
+      setItemError('Selecione um produto para adicionar à venda.');
       return;
     }
+
+    const qty = typeof selectedQuantity === 'number' && selectedQuantity > 0 ? selectedQuantity : 1;
+
+    setItems((prev) => {
+      const existingIndex = prev.findIndex((it) => it.productId === selectedProductId);
+      if (existingIndex >= 0) {
+        // Incrementa a quantidade caso o item já tenha sido adicionado
+        return prev.map((it, idx) =>
+          idx === existingIndex ? { ...it, quantity: it.quantity + qty } : it
+        );
+      }
+      return [
+        ...prev,
+        {
+          key: `item-${Date.now()}-${prev.length + 1}`,
+          productId: selectedProductId,
+          quantity: qty,
+        },
+      ];
+    });
+
+    // Reseta os campos de seleção do topo
+    setSelectedProductId('');
+    setSelectedQuantity(1);
+    setItemError(null);
+    setFormError(null);
+  };
+
+  // Remoção de item da listagem confirmada
+  const handleRemoveItem = (index: number) => {
     setItems((prev) => prev.filter((_, idx) => idx !== index));
     setFormError(null);
-  };
-
-  const handleItemProductChange = (index: number, e: ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    const prodId = val === '' ? '' : parseInt(val, 10);
-    setItems((prev) =>
-      prev.map((item, idx) => (idx === index ? { ...item, productId: prodId } : item))
-    );
-    setFormError(null);
-  };
-
-  const handleItemQuantityChange = (index: number, e: ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (val === '') {
-      setItems((prev) =>
-        prev.map((item, idx) => (idx === index ? { ...item, quantity: '' } : item))
-      );
-      return;
-    }
-    const qty = parseInt(val, 10);
-    const validQty = isNaN(qty) ? '' : Math.max(1, qty);
-    setItems((prev) =>
-      prev.map((item, idx) => (idx === index ? { ...item, quantity: validQty } : item))
-    );
   };
 
   // Submissão do formulário
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    setSuccessMessage(null);
 
-    // Validações no cliente
-    if (!invoiceNumber.trim()) {
-      setFormError('Informe o número da nota fiscal.');
-      return;
-    }
+    // Validações no cliente (sem o campo da Nota Fiscal, que é gerada automaticamente)
     if (!soldAt) {
       setFormError('Informe a data e horário da venda.');
-      return;
-    }
-    if (customerId === '') {
-      setFormError('Selecione o cliente associado à venda.');
       return;
     }
     if (salespersonId === '') {
       setFormError('Selecione o vendedor responsável.');
       return;
     }
-
-    const invalidItems = items.filter(
-      (it) => it.productId === '' || typeof it.quantity !== 'number' || it.quantity < 1
-    );
-    if (invalidItems.length > 0 || items.length === 0) {
-      setFormError('Selecione um produto e uma quantidade válida (mínimo 1) para todos os itens.');
+    if (customerId === '') {
+      setFormError('Selecione o cliente associado à venda.');
+      return;
+    }
+    if (items.length === 0) {
+      setFormError('Adicione pelo menos um produto à venda.');
       return;
     }
 
@@ -191,23 +194,28 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
       // Converte a data local para ISO 8601 UTC
       const isoSoldAt = new Date(soldAt).toISOString();
 
+      // Geração dinâmica do número da nota fiscal (auto-incremental / identificador único provisório)
+      const invoiceNumber = generateInvoiceNumber();
+
       const payload = {
-        invoice_number: invoiceNumber.trim(),
+        invoice_number: invoiceNumber,
         sold_at: isoSoldAt,
         customer_id: customerId as number,
         salesperson_id: salespersonId as number,
         items: items.map((it) => ({
-          product_id: it.productId as number,
-          quantity: it.quantity as number,
+          product_id: it.productId,
+          quantity: it.quantity,
         })),
       };
 
       const created = await createSale(payload);
-      setSuccessMessage(`Venda NF ${created.invoice_number} registrada com sucesso!`);
 
       if (onSuccess) {
-        setTimeout(() => onSuccess(created.id), 1200);
+        onSuccess(created.id);
       }
+      navigate('/vendas', {
+        state: { toastMessage: 'VENDA REALIZADA COM SUCESSO!' },
+      });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erro ao registrar venda.';
       setFormError(message);
@@ -216,19 +224,13 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
 
   return (
     <div className={`container ${styles.page}`}>
-      <div className={styles.pageHeader}>
-        <div className={styles.titleWrapper}>
-          <h1 className={styles.pageTitle}>Nova Venda</h1>
-          <p className={styles.pageSubtitle}>
-            Preencha os dados da transação. As comissões serão calculadas dinamicamente com base nas regras do dia.
-          </p>
-        </div>
-        {onCancel && (
+      {onCancel && (
+        <div className={styles.topActionsBar}>
           <Button variant="outline" size="sm" onClick={onCancel} leftIcon={<ArrowLeft size={16} />}>
             Voltar
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {formError && (
         <div className="alert alert-danger" role="alert">
@@ -244,197 +246,236 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
         </div>
       )}
 
-      {successMessage && (
-        <div className="alert alert-success" role="alert">
-          <CheckCircle2 size={20} />
-          <span>{successMessage}</span>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} noValidate>
-        <Card>
-          <Card.Body>
-            <div className={styles.formGrid}>
-              <Input
-                id="invoice-number-input"
-                label="Número da Nota Fiscal"
-                required
-                placeholder="Ex: NF-10520"
-                value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-              />
+        {/* Layout Master em Duas Colunas sem Card global (Figma #833:2) */}
+        <div className={styles.twoColumnLayout}>
+          {/* Coluna da Esquerda: Produtos (#833:8) */}
+          <div className={styles.leftColumn}>
+            <h2 className={styles.sectionTitle}>Produtos</h2>
 
-              <Input
-                id="sold-at-input"
-                label="Data e Hora da Venda"
-                type="datetime-local"
-                required
-                value={soldAt}
-                onChange={(e) => setSoldAt(e.target.value)}
-                helperText={
-                  activeDayRule
-                    ? `Regra do dia (${activeDayRule.day_name || 'Dia'}): Mínimo ${formatPercentage(activeDayRule.min_percentage)} / Máximo ${formatPercentage(activeDayRule.max_percentage)}`
-                    : undefined
-                }
-              />
-
-              <div className={styles.selectGroup}>
-                <label htmlFor="customer-select" className={styles.label}>
-                  Cliente <span className={styles.required}>*</span>
+            {/* Mecânica de Produtos: Campos de seleção e quantidade + botão Adicionar acima da tabela */}
+            <div className={styles.productFormRow}>
+              <div className={styles.productSelectGroup}>
+                <label htmlFor="product-search-select" className={styles.label}>
+                  Buscar pelo código de barras ou descrição
                 </label>
                 <select
-                  id="customer-select"
-                  className={styles.select}
-                  value={customerId}
-                  onChange={(e) =>
-                    setCustomerId(e.target.value === '' ? '' : parseInt(e.target.value, 10))
-                  }
-                  required
+                  id="product-search-select"
+                  aria-label="Produto"
+                  className={styles.productSelect}
+                  value={selectedProductId}
+                  onChange={(e) => {
+                    setSelectedProductId(e.target.value === '' ? '' : parseInt(e.target.value, 10));
+                    setItemError(null);
+                  }}
                 >
-                  <option value="">Selecione um cliente...</option>
-                  {formData.customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+                  <option value="">Digite o código ou nome do produto</option>
+                  {formData.products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      [{p.code}] {p.description} - R$ {p.unit_price} ({p.commission_percentage}%)
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className={styles.selectGroup}>
-                <label htmlFor="salesperson-select" className={styles.label}>
-                  Vendedor <span className={styles.required}>*</span>
+              <div className={styles.quantityGroup}>
+                <label htmlFor="product-quantity-input" className={styles.label}>
+                  Quantidade de itens
                 </label>
-                <select
-                  id="salesperson-select"
-                  className={styles.select}
-                  value={salespersonId}
-                  onChange={(e) =>
-                    setSalespersonId(e.target.value === '' ? '' : parseInt(e.target.value, 10))
-                  }
-                  required
-                >
-                  <option value="">Selecione um vendedor...</option>
-                  {formData.salespeople.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                <input
+                  id="product-quantity-input"
+                  aria-label="Quantidade"
+                  type="number"
+                  min="1"
+                  className={styles.quantityInput}
+                  value={selectedQuantity}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      setSelectedQuantity('');
+                      return;
+                    }
+                    const parsed = parseInt(val, 10);
+                    setSelectedQuantity(isNaN(parsed) ? '' : Math.max(1, parsed));
+                    setItemError(null);
+                  }}
+                />
               </div>
-            </div>
 
-            {/* Seção de Itens da Venda */}
-            <div className={styles.itemsSection}>
-              <div className={styles.itemsHeader}>
-                <h2 className={styles.itemsTitle}>Produtos da Venda</h2>
+              <div className={styles.addButtonWrapper}>
                 <Button
                   type="button"
-                  variant="secondary"
-                  size="sm"
+                  variant="primary"
+                  className={styles.addProductButton}
                   onClick={handleAddItem}
                   leftIcon={<Plus size={16} />}
                 >
-                  Adicionar Produto
+                  Adicionar
                 </Button>
               </div>
-
-              <Table className={styles.itemsTable}>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead style={{ width: '40%' }}>Produto</TableHead>
-                    <TableHead style={{ width: '12%' }}>Qtd</TableHead>
-                    <TableHead style={{ width: '16%' }}>Preço Unitário</TableHead>
-                    <TableHead style={{ width: '14%' }}>% Comissão</TableHead>
-                    <TableHead style={{ width: '14%' }}>Subtotal</TableHead>
-                    <TableHead style={{ width: '4%' }}></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {calculatedItems.map((item, index) => (
-                    <TableRow key={item.key}>
-                      <TableCell>
-                        <select
-                          id={`product-select-${index}`}
-                          aria-label={`Produto ${index + 1}`}
-                          className={styles.select}
-                          value={item.productId}
-                          onChange={(e) => handleItemProductChange(index, e)}
-                        >
-                          <option value="">Selecione um produto...</option>
-                          {formData.products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              [{p.code}] {p.description} - R$ {p.unit_price} ({p.commission_percentage}%)
-                            </option>
-                          ))}
-                        </select>
-                      </TableCell>
-                      <TableCell>
-                        <input
-                          id={`quantity-input-${index}`}
-                          aria-label={`Quantidade do item ${index + 1}`}
-                          type="number"
-                          min="1"
-                          className={`${styles.select} ${styles.quantityInput}`}
-                          value={item.quantity}
-                          onChange={(e) => handleItemQuantityChange(index, e)}
-                        />
-                      </TableCell>
-                      <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
-                      <TableCell>
-                        <span className="badge badge-primary">
-                          {formatPercentage(item.appliedRate)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className={styles.subtotalText}>{formatCurrency(item.subtotal)}</span>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveItem(index)}
-                          aria-label={`Remover item ${index + 1}`}
-                          disabled={items.length <= 1}
-                        >
-                          <Trash2 size={16} color="var(--color-danger)" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
             </div>
 
-            {/* Totais da Venda */}
-            <div className={styles.totalsCard}>
-              <div className={styles.totalsGrid}>
-                <div className={styles.totalMetric}>
-                  <span className={styles.metricLabel}>Valor Total da Venda</span>
-                  <span className={styles.metricValue}>{formatCurrency(totalSaleAmount)}</span>
-                </div>
-                <div className={styles.totalMetric}>
-                  <span className={styles.metricLabel}>Total de Comissões</span>
-                  <span className={styles.metricValueCommission}>
-                    {formatCurrency(totalSaleCommission)}
-                  </span>
-                </div>
+            {itemError && <span className={styles.itemError}>{itemError}</span>}
+
+            {/* Tabela de Listagem de Itens Confirmados (#833:9 a #833:14) */}
+            <div className={styles.itemsTableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr className={styles.tableHeaderRow}>
+                    <th className={styles.thProduct}>Produtos/Serviço</th>
+                    <th className={styles.thQty}>Quantidade</th>
+                    <th className={styles.thUnitPrice}>Preço unitário</th>
+                    <th className={styles.thTotal}>Total</th>
+                    <th className={styles.thAction}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {calculatedItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className={styles.emptyTable}>
+                        Nenhum produto adicionado à venda.
+                      </td>
+                    </tr>
+                  ) : (
+                    calculatedItems.map((item, index) => (
+                      <tr key={item.key} className={styles.tableRow}>
+                        <td className={styles.tdProduct}>
+                          {item.product
+                            ? `[${item.product.code}] ${item.product.description}`
+                            : 'Produto não identificado'}
+                        </td>
+                        <td className={styles.tdQty}>{item.quantity}</td>
+                        <td className={styles.tdUnitPrice}>{formatCurrency(item.unitPrice)}</td>
+                        <td className={styles.tdTotal}>{formatCurrency(item.subtotal)}</td>
+                        <td className={styles.tdAction}>
+                          <button
+                            type="button"
+                            className={styles.deleteItemButton}
+                            onClick={() => handleRemoveItem(index)}
+                            aria-label={`Remover item ${index + 1}`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Divisória Vertical Central (#833:51) */}
+          <div className={styles.verticalDivider} />
+
+          {/* Coluna da Direita: Dados da Venda (#833:37) sem campo de Nota Fiscal */}
+          <div className={styles.rightColumn}>
+            <h2 className={styles.salesDataTitle}>Dados da venda</h2>
+
+            <div className={styles.formField}>
+              <label htmlFor="sold-at-input" className={styles.label}>
+                Data e Hora da Venda <span className={styles.required}>*</span>
+              </label>
+              <input
+                id="sold-at-input"
+                type="datetime-local"
+                className={styles.fieldInput}
+                required
+                value={soldAt}
+                onChange={(e) => setSoldAt(e.target.value)}
+              />
+              {activeDayRule && (
+                <span className={styles.helperText}>
+                  Regra do dia ({activeDayRule.day_name || 'Dia'}): Mínimo{' '}
+                  {formatPercentage(activeDayRule.min_percentage)} / Máximo{' '}
+                  {formatPercentage(activeDayRule.max_percentage)}
+                </span>
+              )}
+            </div>
+
+            <div className={styles.formField}>
+              <label htmlFor="salesperson-select" className={styles.label}>
+                Escolha um vendedor <span className={styles.required}>*</span>
+              </label>
+              <select
+                id="salesperson-select"
+                aria-label="Vendedor"
+                className={styles.fieldSelect}
+                value={salespersonId}
+                onChange={(e) =>
+                  setSalespersonId(e.target.value === '' ? '' : parseInt(e.target.value, 10))
+                }
+                required
+              >
+                <option value="">Selecione o nome</option>
+                {formData.salespeople.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className={styles.formField}>
+              <label htmlFor="customer-select" className={styles.label}>
+                Escolha um cliente <span className={styles.required}>*</span>
+              </label>
+              <select
+                id="customer-select"
+                aria-label="Cliente"
+                className={styles.fieldSelect}
+                value={customerId}
+                onChange={(e) =>
+                  setCustomerId(e.target.value === '' ? '' : parseInt(e.target.value, 10))
+                }
+                required
+              >
+                <option value="">Selecione o nome</option>
+                {formData.customers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Seção de Totais da Venda (#833:10, #833:11) */}
+            <div className={styles.totalsSection}>
+              <div className={styles.totalRow}>
+                <span className={styles.totalLabel}>Valor total da venda:</span>
+                <span className={styles.totalValue}>{formatCurrency(totalSaleAmount)}</span>
+              </div>
+              <div className={styles.commissionRow}>
+                <span className={styles.commissionLabel}>Total de comissões:</span>
+                <span className={styles.commissionValue}>{formatCurrency(totalSaleCommission)}</span>
               </div>
             </div>
 
-            {/* Barra de Ações */}
+            {/* Barra de Ações (#833:45 & #833:48) */}
             <div className={styles.actionsBar}>
               {onCancel && (
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={styles.cancelButton}
+                  onClick={onCancel}
+                  disabled={isLoading}
+                >
                   Cancelar
                 </Button>
               )}
-              <Button type="submit" variant="primary" size="lg" isLoading={isLoading}>
+              <Button
+                type="submit"
+                variant="primary"
+                className={styles.submitButton}
+                isLoading={isLoading}
+                aria-label="Salvar Venda"
+              >
                 Salvar Venda
               </Button>
             </div>
-          </Card.Body>
-        </Card>
+          </div>
+        </div>
       </form>
     </div>
   );

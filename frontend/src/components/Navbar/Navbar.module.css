@@ -1,92 +1,252 @@
+/* ==============================================================================
+   PROJETO SPASSU - NAVBAR GLOBAL & MENU LATERAL (Figma Aligned #830:124 & #833:2)
+   Top Bar de 87px com Menu Sanduíche à esquerda, Logo ao lado,
+   Título Centralizado dinâmico e Sidebar/Drawer deslizante fiel ao Figma.
+   ============================================================================== */
+
 .header {
+  height: 87px; /* 87px - padrão exato Figma #833:3 */
+  background-color: #F0F0F0; /* Fills Figma #833:3 */
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.12); /* Shadow Figma #833:3 */
   position: sticky;
   top: 0;
-  z-index: 50;
-  background-color: var(--bg-surface);
+  z-index: 100;
   border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow-xs);
 }
 
 .inner {
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  padding: 0 var(--spacing-6);
+  position: relative;
+}
+
+/* Bloco Esquerdo: Menu Sanduíche + Logo */
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  min-width: 220px;
+  z-index: 2;
+}
+
+.menuButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-button);
+  color: var(--color-brand-primary-light, #2B7D83); /* Figma fill #2B7D83 */
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.menuButton:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-brand-primary, #00585E);
+}
+
+.menuButton:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--spacing-3);
+  gap: var(--spacing-2);
   text-decoration: none;
-  color: var(--text-primary);
-  font-weight: var(--font-weight-bold);
-  font-size: var(--font-size-lg);
+  color: inherit;
   cursor: pointer;
 }
 
-.logoIcon {
-  display: flex;
+.brandIcon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
-  border-radius: var(--radius-md);
-}
-
-.brandTitle {
-  display: flex;
-  flex-direction: column;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-button);
+  background-color: var(--color-brand-primary);
+  color: #FFFFFF;
 }
 
 .brandName {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary-800);
-  line-height: 1.2;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-2xl);
+  font-weight: 800; /* ExtraBold */
+  letter-spacing: 0.05em;
+  color: var(--color-brand-primary); /* #00585E */
+  line-height: 1;
 }
 
-.brandSubtitle {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  font-weight: var(--font-weight-normal);
-}
-
-.nav {
+/* Bloco Central: TÍTULO CENTRALIZADO NO CABEÇALHO (Figma #833:7) */
+.centerSection {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: var(--spacing-1);
+  justify-content: center;
+  pointer-events: none;
+  max-width: calc(100% - 460px);
 }
 
-.navLink {
+.pageTitle {
+  font-family: var(--font-sans);
+  font-size: 32px; /* 32px - Figma #833:7 */
+  font-weight: 800; /* ExtraBold */
+  color: var(--color-brand-primary-light); /* #2B7D83 / $XPTO/brand/primary-light */
+  margin: 0;
+  line-height: 1.33;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bloco Direito: Espaçador para garantir simetria central */
+.rightSection {
+  min-width: 220px;
+  display: flex;
+  justify-content: flex-end;
+  z-index: 2;
+}
+
+/* ==============================================================================
+   SIDEBAR / DRAWER DESLIZANTE DO MENU LATERAL (Figma Component #830:124)
+   Container: width 273px, fill #F2F2F2, shadow 0 4px 4px rgba(0,0,0,0.25)
+   Items: height 42px, fill #F8F8F8, Roboto 15px Bold/ExtraBold #2B7D83
+   ============================================================================== */
+
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  top: 87px;
+  background-color: rgba(0, 0, 0, 0.25);
+  z-index: 98;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-base), visibility var(--transition-base);
+  backdrop-filter: blur(1px);
+}
+
+.drawerOverlayVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer {
+  position: fixed;
+  top: 87px;
+  left: 0;
+  bottom: 0;
+  width: 273px; /* Exato Figma #830:124 */
+  background-color: #F2F2F2; /* Exato Figma #830:101 */
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25); /* Exato Figma effect_e2e20efa */
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px; /* Exato Figma y: 20 */
+  transform: translateX(-100%);
+  transition: transform var(--transition-base);
+  user-select: none;
+}
+
+.drawerOpen {
+  transform: translateX(0);
+}
+
+.drawerNav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px; /* Exato Figma: y:20 até y:62 (42px) -> próximo em y:65 */
+  width: 100%;
+}
+
+.drawerLink {
+  display: flex;
+  align-items: center;
+  height: 42px; /* Exato Figma #830:108 & #830:109 */
+  width: 273px;
+  box-sizing: border-box;
+  background-color: #F8F8F8; /* Exato Figma fill_73aea8e7 */
+  padding: 0 9px 0 32px; /* Exato Figma: Ícone em x:32, angle-right até x:264 (9px borda direita) */
+  text-decoration: none;
+  color: #2B7D83; /* Exato Figma $XPTO/brand/primary-light */
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  border-left: 4px solid transparent;
+}
+
+.drawerLink:hover {
+  background-color: #FFFFFF;
+  color: var(--color-brand-primary, #00585E);
+}
+
+.drawerLink:hover .drawerItemChevron {
+  color: var(--color-brand-primary-light, #2B7D83);
+  transform: translateX(2px);
+}
+
+.drawerLinkActive {
+  background-color: #FFFFFF;
+  border-left-color: #2B7D83; /* Indicador sutil de ativação */
+  padding-left: 28px; /* Compensa os 4px da borda para manter alinhamento em x:32 */
+}
+
+.drawerItemIcon {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-4);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  transition: all var(--transition-fast);
-  cursor: pointer;
+  justify-content: center;
+  width: 15px; /* Exato Figma #830:113 & #830:119 */
+  height: 15px;
+  color: #2B7D83; /* Exato Figma $XPTO/brand/primary-light */
+  flex-shrink: 0;
 }
 
-.navLink:hover {
-  color: var(--color-primary);
-  background-color: var(--color-gray-100);
+.drawerItemLabel {
+  margin-left: 15px; /* Exato Figma: 62 - (32 + 15) = 15px */
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 15px; /* Exato Figma 15px */
+  font-weight: 700; /* Roboto Bold */
+  line-height: 1.33;
+  color: #2B7D83;
 }
 
-.navLink.active {
-  color: var(--color-primary);
-  background-color: var(--color-primary-light);
-  font-weight: var(--font-weight-semibold);
-}
-
-.actions {
-  display: flex;
+.drawerItemChevron {
+  margin-left: auto;
+  display: inline-flex;
   align-items: center;
-  gap: var(--spacing-3);
+  justify-content: center;
+  width: 25px; /* Exato Figma #830:140 & #830:142 */
+  height: 25px;
+  color: #DADADA; /* Exato Figma fill #DADADA */
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+@media (max-width: 768px) {
+  .header {
+    height: 72px;
+  }
+  .drawer {
+    top: 72px;
+    width: 260px;
+  }
+  .drawerOverlay {
+    top: 72px;
+  }
+  .drawerLink {
+    width: 260px;
+    padding: 0 9px 0 24px;
+  }
+  .pageTitle {
+    font-size: 22px;
+  }
+  .centerSection {
+    max-width: calc(100% - 160px);
+  }
 }

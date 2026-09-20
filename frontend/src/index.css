@@ -1,132 +1,253 @@
 /* ==============================================================================
    PROJETO SPASSU - SISTEMA DE DESIGN & TOKENS GLOBAIS (index.css)
-   Inspirado no protótipo Figma Spassu para o sistema de gestão de vendas e comissões.
+   Extraído diretamente do protótipo Figma Spassu (Teste Python DEV, Node: 69:5896).
    ============================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* --- Cores Primárias (Identidade Visual Spassu) --- */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* ==========================================================================
+     1. PALETA DE CORES (FIGMA TOKENS)
+     ========================================================================== */
+
+  /* --- Marca Primária ($XPTO/brand) --- */
+  --color-brand-primary: #00585e;         /* $XPTO/brand/primary */
+  --color-brand-primary-light: #2b7d83;   /* $XPTO/brand/primary-light */
+  --color-brand-primary-dark: #003538;    /* $XPTO/brand/primary-dark */
+  --color-brand-primary-subtle: #e6eff0;  /* Tint de foco / realce primário */
 
   /* Aliases funcionais primários */
-  --color-primary: #1e40af;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-light: #eff6ff;
-  --color-primary-focus: rgba(37, 99, 235, 0.25);
+  --color-primary: #00585e;
+  --color-primary-hover: #003538;
+  --color-primary-light: #e6eff0;
+  --color-primary-focus: rgba(0, 88, 94, 0.25);
 
-  /* --- Cores de Feedback e Acentuação --- */
-  /* Sucesso / Comissões */
-  --color-success-50: #ecfdf5;
-  --color-success-100: #d1fae5;
-  --color-success-500: #10b981;
-  --color-success-600: #059669;
-  --color-success-700: #047857;
-  --color-success: #059669;
-  --color-success-light: #ecfdf5;
+  /* Escala tonal primária (Base Teal Spassu) */
+  --color-primary-50: #f0f7f7;
+  --color-primary-100: #d5e7e8;
+  --color-primary-200: #accfd1;
+  --color-primary-300: #7eb3b6;
+  --color-primary-400: #499499;
+  --color-primary-500: #2b7d83;
+  --color-primary-600: #00585e;
+  --color-primary-700: #00474c;
+  --color-primary-800: #003538;
+  --color-primary-900: #002528;
 
-  /* Alerta / Atenção */
-  --color-warning-50: #fffbeb;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
-  --color-warning: #d97706;
-  --color-warning-light: #fffbeb;
+  /* --- Marca Secundária & Comissões ($SIGPAE/brand) --- */
+  --color-brand-secondary-dark: #0c6b45;  /* $SIGPAE/brand/primary-dark */
+  --color-brand-secondary: #108158;       /* Ativo / destaque comissões */
+  --color-brand-secondary-light: #b7e0d1; /* Fundo de banner / sucesso */
 
-  /* Erro / Perigo / Exclusão */
+  /* --- Cores de Feedback e Notificações --- */
+  /* Sucesso / Confirmação ("VENDA REALIZADA COM SUCESSO!") */
+  --color-success: #108158;
+  --color-success-hover: #0c6b45;
+  --color-success-bg: #b7e0d1;            /* Figma alert fill */
+  --color-success-text: #0c6b45;
+  --color-success-light: #b7e0d1;
+  --color-success-50: #f0fdf4;
+  --color-success-100: #b7e0d1;
+  --color-success-500: #108158;
+  --color-success-600: #0c6b45;
+  --color-success-700: #084c31;
+
+  /* Perigo / Exclusão / Alerta Crítico (Botão de lixeira & Modal de remoção) */
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-bg: #eec5c4;             /* Figma trash ellipse fill */
+  --color-danger-text: #991b1b;
+  --color-danger-light: #eec5c4;
+  --color-danger-focus: rgba(220, 38, 38, 0.25);
   --color-danger-50: #fef2f2;
-  --color-danger-100: #fee2e2;
+  --color-danger-100: #eec5c4;
   --color-danger-500: #ef4444;
   --color-danger-600: #dc2626;
   --color-danger-700: #b91c1c;
-  --color-danger: #dc2626;
-  --color-danger-light: #fef2f2;
-  --color-danger-focus: rgba(220, 38, 38, 0.2);
 
-  /* --- Escala Neutra / Cinzas --- */
-  --color-white: #ffffff;
-  --color-gray-50: #f8fafc;
-  --color-gray-100: #f1f5f9;
-  --color-gray-200: #e2e8f0;
-  --color-gray-300: #cbd5e1;
-  --color-gray-400: #94a3b8;
-  --color-gray-500: #64748b;
-  --color-gray-600: #475569;
-  --color-gray-700: #334155;
-  --color-gray-800: #1e293b;
-  --color-gray-900: #0f172a;
+  /* Atenção / Alerta */
+  --color-warning: #d97706;
+  --color-warning-hover: #b45309;
+  --color-warning-bg: #fef3c7;
+  --color-warning-text: #92400e;
+  --color-warning-light: #fffbeb;
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
 
-  /* Superfícies e Bordas */
-  --bg-page: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-surface-alt: #f1f5f9;
-  --border-color: #e2e8f0;
-  --border-color-dark: #cbd5e1;
+  /* --- Escala Neutra / Cinzas (Figma Fills & Strokes) --- */
+  --color-white: #ffffff;                 /* $text/inverse, fill_658ab2fa */
+  --color-black: #000000;                 /* fill_34dc0314 */
+  --color-gray-50: #f8f8f8;               /* fill_73aea8e7 (Fundo de página) */
+  --color-gray-100: #f2f2f2;              /* Menu Lateral #830:101 (Fundo do menu) */
+  --color-gray-150: #f0f0f0;              /* fill_114125f5 (Inputs/desabilitados) */
+  --color-gray-200: #dadada;              /* fill_5bcace3a (Divisória modal) */
+  --color-gray-300: #d7d7d7;              /* fill_441636dc (Bordas de tabela) */
+  --color-gray-350: #cccccc;              /* fill_06d3d4fc (Bordas neutras) */
+  --color-gray-400: #c4c4c4;              /* fill_8af2b11d (Linhas separadoras) */
+  --color-gray-450: #a6a6a6;              /* Stroke de inputs */
+  --color-gray-500: #a4a4a4;              /* $neutral/medium, fill_31de7bab */
+  --color-gray-600: #888888;              /* fill_44ad129d (Subtítulos/ícones) */
+  --color-gray-700: #686868;              /* Texto secundário */
+  --color-gray-800: #42474a;              /* $neutral/dark, $text/01 (Texto base) */
+  --color-gray-900: #333333;              /* fill_6015cc48 (Títulos escuros) */
 
-  /* Tipografia */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-light: #94a3b8;
-  --text-inverse: #ffffff;
+  /* Superfícies e Telas */
+  --bg-page: #f8f8f8;                     /* Figma page canvas */
+  --bg-surface: #ffffff;                  /* Cards e modais brancos */
+  --bg-surface-alt: #f2f2f2;              /* Barra lateral / Menu */
+  --color-surface: #ffffff;
+  --color-bg-subtle: #f8f8f8;
+  --color-sidebar: #f2f2f2;
 
-  /* Font Families */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Bordas e Linhas */
+  --border-color: #d7d7d7;
+  --border-color-dark: #a6a6a6;
+  --color-border: #d7d7d7;
+  --border-color-input: #a6a6a6;
+  --border-color-divider: #c4c4c4;
+  --border-color-modal: #dadada;
+  --border-color-table: #d7d7d7;
+
+  /* Tipografia / Cores de Texto */
+  --text-primary: #42474a;                /* $neutral/dark, $text/01 */
+  --text-secondary: #686868;
+  --text-muted: #888888;                  /* fill_44ad129d */
+  --text-light: #a4a4a4;                  /* $neutral/medium */
+  --text-heading: #333333;                /* fill_6015cc48 */
+  --text-inverse: #ffffff;                /* $text/inverse */
+  --color-text-main: #42474a;
+  --color-text-muted: #686868;
+
+  /* ==========================================================================
+     2. ESCALAS TIPOGRÁFICAS (FIGMA TOKENS)
+     ========================================================================== */
+
+  /* Famílias Tipográficas */
+  --font-sans: 'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font-icon: 'Font Awesome 5 Free', sans-serif;
 
-  /* Escala Tipográfica */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
+  /* Tamanhos de Fonte */
+  --font-size-xs: 0.75rem;                /* 12px */
+  --font-size-sm: 0.875rem;               /* 14px (Figma table content, button text) */
+  --font-size-14: 14px;
+  --font-size-md: 0.9375rem;              /* 15px (Figma sidebar items) */
+  --font-size-15: 15px;
+  --font-size-base: 1rem;                 /* 16px (Figma body, inputs, headers de coluna) */
+  --font-size-16: 16px;
+  --font-size-lg: 1.125rem;               /* 18px (Figma subheadings, cards) */
+  --font-size-18: 18px;
+  --font-size-xl: 1.25rem;                /* 20px (Figma modal titles) */
+  --font-size-20: 20px;
+  --font-size-2xl: 1.5rem;                /* 24px (Figma KPI values / subheadings) */
+  --font-size-24: 24px;
+  --font-size-3xl: 1.75rem;               /* 28px (Figma main titles "Vendas", "Comissões") */
+  --font-size-28: 28px;
+  --font-size-4xl: 2rem;                  /* 32px (Figma section headers) */
+  --font-size-32: 32px;
+  --font-size-display: 10.75rem;          /* 172px (Figma billboard banner) */
 
   /* Pesos de Fonte */
   --font-weight-normal: 400;
+  --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
 
-  /* Espaçamentos (Base 4px) */
-  --spacing-1: 0.25rem;  /* 4px */
-  --spacing-2: 0.5rem;   /* 8px */
-  --spacing-3: 0.75rem;  /* 12px */
-  --spacing-4: 1rem;     /* 16px */
-  --spacing-5: 1.25rem;  /* 20px */
-  --spacing-6: 1.5rem;   /* 24px */
-  --spacing-8: 2rem;     /* 32px */
-  --spacing-10: 2.5rem;  /* 40px */
-  --spacing-12: 3rem;    /* 48px */
+  /* Aliases para pesos */
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
 
-  /* Raios de Arredondamento */
-  --radius-sm: 0.25rem;  /* 4px */
-  --radius-md: 0.375rem; /* 6px */
-  --radius-lg: 0.5rem;   /* 8px */
-  --radius-xl: 0.75rem;  /* 12px */
-  --radius-full: 9999px;
+  /* Alturas de Linha (Line-heights) */
+  --line-height-tight: 1.33;              /* Figma textStyle lineHeight 1.3em / 1.33em */
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
 
-  /* Sombras */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  /* ==========================================================================
+     3. ESPAÇAMENTOS (SPACING SCALE & FIGMA COMPONENT SIZES)
+     ========================================================================== */
 
-  /* Transições */
+  /* Escala Base de 4px */
+  --spacing-1: 0.25rem;                   /* 4px */
+  --spacing-2: 0.5rem;                    /* 8px */
+  --spacing-3: 0.75rem;                   /* 12px */
+  --spacing-4: 1rem;                      /* 16px */
+  --spacing-5: 1.25rem;                   /* 20px */
+  --spacing-6: 1.5rem;                    /* 24px */
+  --spacing-8: 2rem;                      /* 32px */
+  --spacing-10: 2.5rem;                   /* 40px */
+  --spacing-12: 3rem;                     /* 48px */
+
+  /* Aliases utilitários --space-* */
+  --space-1: 0.25rem;                     /* 4px */
+  --space-2: 0.5rem;                      /* 8px */
+  --space-3: 0.75rem;                     /* 12px */
+  --space-4: 1rem;                        /* 16px */
+  --space-5: 1.25rem;                     /* 20px */
+  --space-6: 1.5rem;                      /* 24px */
+  --space-8: 2rem;                        /* 32px */
+  --space-10: 2.5rem;                     /* 40px */
+  --space-12: 3rem;                       /* 48px */
+
+  /* Dimensões e Paddings de Componentes Figma */
+  --padding-button-sm: 8px 16px;          /* Figma compact button padding */
+  --padding-button: 11px 23px;            /* Figma primary button padding */
+  --padding-button-lg: 11px 23px;
+  --height-input: 38px;                   /* Figma input/select height */
+  --height-input-lg: 44px;                /* Figma tall input height */
+  --sidebar-width: 273px;                 /* Figma Menu Lateral width */
+
+  /* ==========================================================================
+     4. RAIOS DE ARREDONDAMENTO (BORDER-RADIUS)
+     ========================================================================== */
+
+  --radius-none: 0px;                     /* Figma 0px 0px 0px 0px */
+  --radius-xs: 3px;                       /* Figma buttons, input cards */
+  --radius-sm: 4px;                       /* Figma modal legenda */
+  --radius-md: 5px;                       /* Figma alert banners */
+  --radius-lg: 6px;                       /* Figma inputs, selects */
+  --radius-xl: 8px;                       /* Cards / superfícies */
+  --radius-2xl: 12px;
+  --radius-full: 9999px;                  /* Círculo (Figma trash icon button) & Badges */
+
+  /* Aliases semânticos de raio */
+  --radius-button: 3px;                   /* Figma button borderRadius: 3px */
+  --radius-input: 6px;                    /* Figma input borderRadius: 6px */
+  --radius-alert: 5px;                    /* Figma alert borderRadius: 5px */
+  --radius-modal: 4px;                    /* Figma modal borderRadius: 4px */
+
+  /* ==========================================================================
+     5. SOMBRAS (BOX SHADOWS / FIGMA EFFECTS)
+     ========================================================================== */
+
+  --shadow-xs: 0px 1px 1px 0px rgba(0, 0, 0, 0.05);   /* effect_5ae1ae84 */
+  --shadow-sm: 0px 2px 2px 1px rgba(0, 0, 0, 0.08);   /* Figma card shadow */
+  --shadow-md: 0px 4px 4px 0px rgba(0, 0, 0, 0.12);   /* effect_17bfeae4 */
+  --shadow-lg: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);   /* effect_e2e20efa (Menu Lateral & Modais) */
+  --shadow-xl: 0px 8px 16px 0px rgba(0, 0, 0, 0.15);  /* Modais destacados */
+
+  /* ==========================================================================
+     6. BORDAS / STROKES & TRANSIÇÕES
+     ========================================================================== */
+
+  --border-width-thin: 0.5px;             /* Figma strokeWeight 0.5px */
+  --border-width: 1px;                    /* Figma strokeWeight 1px */
+  --border-width-thick: 2px;
+
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- Reset & Base Styles --- */
+/* ==============================================================================
+   RESET & ESTILOS BASE (Preservação rigorosa de padrões globais)
+   ============================================================================== */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -136,7 +257,7 @@
 html {
   font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
   color: var(--text-primary);
   background-color: var(--bg-page);
   -webkit-font-smoothing: antialiased;
@@ -159,19 +280,19 @@ body {
 
 /* --- Tipografia Global --- */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary);
+  color: var(--text-heading);
   font-weight: var(--font-weight-semibold);
-  line-height: 1.25;
+  line-height: var(--line-height-tight);
 }
 
-h1 { font-size: var(--font-size-3xl); }
-h2 { font-size: var(--font-size-2xl); }
-h3 { font-size: var(--font-size-xl); }
-h4 { font-size: var(--font-size-lg); }
+h1 { font-size: var(--font-size-3xl); }   /* 28px - padrão de títulos de tela Figma */
+h2 { font-size: var(--font-size-2xl); }   /* 24px */
+h3 { font-size: var(--font-size-xl); }    /* 20px */
+h4 { font-size: var(--font-size-lg); }    /* 18px */
 
 p {
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
 }
 
 a {
@@ -213,22 +334,22 @@ a:hover {
 
 .badge-primary {
   background-color: var(--color-primary-light);
-  color: var(--color-primary-700);
+  color: var(--color-primary);
 }
 
 .badge-success {
   background-color: var(--color-success-light);
-  color: var(--color-success-700);
+  color: var(--color-success-text);
 }
 
 .badge-warning {
   background-color: var(--color-warning-light);
-  color: var(--color-warning-600);
+  color: var(--color-warning);
 }
 
 .badge-danger {
   background-color: var(--color-danger-light);
-  color: var(--color-danger-700);
+  color: var(--color-danger-text);
 }
 
 /* --- Mensagens e Alertas --- */
@@ -237,20 +358,20 @@ a:hover {
   align-items: flex-start;
   gap: var(--spacing-3);
   padding: var(--spacing-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-alert);
   font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-4);
   border: 1px solid transparent;
 }
 
 .alert-success {
-  background-color: var(--color-success-light);
-  border-color: var(--color-success-100);
-  color: var(--color-success-700);
+  background-color: var(--color-success-bg);
+  border-color: var(--color-brand-secondary);
+  color: var(--color-success-text);
 }
 
 .alert-danger {
-  background-color: var(--color-danger-light);
-  border-color: var(--color-danger-100);
-  color: var(--color-danger-700);
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-danger-text);
 }

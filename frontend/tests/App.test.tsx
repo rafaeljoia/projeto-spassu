@@ -26,6 +26,7 @@ vi.mock('../src/services/commissionService', () => ({
 describe('App Client-Side Routing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.history.pushState({}, '', '/vendas');
     vi.mocked(saleService.getSales).mockResolvedValue({
       count: 0,
       next: null,
@@ -49,16 +50,42 @@ describe('App Client-Side Routing', () => {
 
     expect(screen.getByText('SPASSU')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /vendas realizadas/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
     });
   });
 
-  it('navega para o formulário de Nova Venda ao clicar no link da Navbar', async () => {
+  it('menu lateral exibe apenas Vendas e Comissões, sem link direto para Nova Venda', async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+    });
+
+    // Botão de menu sanduíche com o ícone fiel do Figma
+    const menuBtn = screen.getByRole('button', { name: /abrir menu de navegação/i });
+    expect(menuBtn).toBeInTheDocument();
+
+    const vendasLink = screen.getByRole('link', { name: /vendas/i });
+    const comissoesLink = screen.getByRole('link', { name: /comissões/i });
+    expect(vendasLink).toBeInTheDocument();
+    expect(comissoesLink).toBeInTheDocument();
+
+    // REGRA ESTRITA: Nova Venda não deve existir como link de navegação do menu lateral
+    const novaVendaLink = screen.queryByRole('link', { name: /nova venda/i });
+    expect(novaVendaLink).not.toBeInTheDocument();
+  });
+
+  it('navega para o formulário de Nova Venda através do botão de ação na listagem de vendas', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const newSaleLink = screen.getByRole('link', { name: /nova venda/i });
-    await user.click(newSaleLink);
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+    });
+
+    // O acesso a nova venda é feito pelo botão de ação na própria tela de listagem de vendas ("Inserir nova Venda")
+    const newSaleBtn = screen.getByRole('button', { name: /inserir nova venda/i });
+    await user.click(newSaleBtn);
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /nova venda/i })).toBeInTheDocument();
@@ -69,9 +96,13 @@ describe('App Client-Side Routing', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    // Navega para nova venda
-    const newSaleLink = screen.getByRole('link', { name: /nova venda/i });
-    await user.click(newSaleLink);
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+    });
+
+    // Navega para nova venda pelo botão de ação
+    const newSaleBtn = screen.getByRole('button', { name: /inserir nova venda/i });
+    await user.click(newSaleBtn);
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /nova venda/i })).toBeInTheDocument();
@@ -82,7 +113,7 @@ describe('App Client-Side Routing', () => {
     await user.click(backBtn);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /vendas realizadas/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
     });
   });
 
@@ -90,13 +121,66 @@ describe('App Client-Side Routing', () => {
     const user = userEvent.setup();
     render(<App />);
 
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+    });
+
     const commissionsLink = screen.getByRole('link', { name: /comissões/i });
     await user.click(commissionsLink);
 
     await waitFor(() => {
       expect(
-        screen.getByRole('heading', { name: /relatório de comissões/i })
+        screen.getAllByRole('heading', { name: /comissões/i })[0]
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('navega para a rota de edição ao clicar no ícone de editar e exibe o título dinâmico com o número da nota', async () => {
+    vi.mocked(saleService.getSales).mockResolvedValue({
+      count: 1,
+      next: null,
+      previous: null,
+      results: [
+        {
+          id: 42,
+          invoice_number: '00001005',
+          sold_at: '2026-09-14T14:30:00Z',
+          customer: { id: 1, name: 'Empresa Alfa Papéis' },
+          salesperson: { id: 1, name: 'Carlos Eduardo Lima' },
+          total_amount: '150.00',
+          total_commission: '15.00',
+        },
+      ],
+    });
+    vi.mocked(saleService.getSaleById).mockResolvedValue({
+      id: 42,
+      invoice_number: '00001005',
+      sold_at: '2026-09-14T14:30:00Z',
+      customer: { id: 1, name: 'Empresa Alfa Papéis' },
+      salesperson: { id: 1, name: 'Carlos Eduardo Lima' },
+      total_amount: '150.00',
+      total_commission: '15.00',
+      items: [],
+    } as any);
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    // Aguarda a lista com a venda renderizada
+    await waitFor(() => {
+      expect(screen.getByText('00001005')).toBeInTheDocument();
+    });
+
+    // Clica no botão de editar da linha
+    const editBtn = screen.getByRole('button', { name: /editar venda 00001005/i });
+    await user.click(editBtn);
+
+    // Navbar centralizado deve exibir "Alterar Venda - Nº 00001005"
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'Alterar Venda - Nº 00001005' })
       ).toBeInTheDocument();
     });
   });
 });
+
