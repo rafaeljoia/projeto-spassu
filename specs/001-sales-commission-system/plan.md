@@ -101,8 +101,8 @@ projeto-spassu/
 ├── .env.local                    # Variáveis locais de desenvolvimento (ignorado pelo git)
 ├── .env.prod                     # Variáveis para execução de produção (ignorado pelo git)
 ├── .gitignore                    # Regras de exclusão do git
-├── docker-compose.yml            # Orquestração para ambiente local / desenvolvimento
-├── docker-compose.prod.yml       # Orquestração para ambiente de produção
+├── docker-compose.local.yml      # Orquestração para ambiente local / desenvolvimento (hot-reload)
+├── docker-compose.yml            # Orquestração padrão para ambiente de produção (Nginx + Gunicorn)
 ├── README.md                     # Documentação completa de instalação, execução e arquitetura
 │
 ├── backend/                      # Serviço Backend (Python + Django + DRF)
@@ -173,7 +173,7 @@ projeto-spassu/
         └── pages/                # Testes de telas e fluxos
 ```
 
-**Structure Decision**: Adoção da estrutura desacoplada em duas pastas principais (`backend/` e `frontend/`), orquestradas na raiz por arquivos `docker-compose.yml` e arquivos de ambiente independentes. Essa separação garante total independência de ciclo de vida, builds especializados e modularidade.
+**Structure Decision**: Adoção da estrutura desacoplada em duas pastas principais (`backend/` e `frontend/`), orquestradas na raiz por arquivos `docker-compose.local.yml` (desenvolvimento) e `docker-compose.yml` (produção) com variáveis de ambiente independentes. Essa separação garante total independência de ciclo de vida, builds especializados e modularidade.
 
 ---
 

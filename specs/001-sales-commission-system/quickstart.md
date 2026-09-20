@@ -25,8 +25,15 @@ cp .env.example .env.local
 
 ### Passo 2: Inicialização dos Serviços
 Execute o build e a inicialização dos contêineres:
+
+**Ambiente de Produção (Padrão: Nginx + Gunicorn):**
 ```bash
-docker compose -f docker-compose.yml --env-file .env.local up --build
+docker compose up --build -d
+```
+
+**Ambiente de Desenvolvimento (Local com Hot-Reload):**
+```bash
+docker compose -f docker-compose.local.yml --env-file .env.local up --build -d
 ```
 Os seguintes serviços estarão disponíveis:
 - **Backend REST API**: `http://localhost:8000/api/v1/`

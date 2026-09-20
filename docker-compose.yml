@@ -1,78 +1,71 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: spassu_db
+    container_name: spassu_db_prod
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-spassu_db}
       POSTGRES_USER: ${POSTGRES_USER:-spassu_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spassu_password}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_prod:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-spassu_user} -d ${POSTGRES_DB:-spassu_db}"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
-      - spassu_network
+      - spassu_prod_network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: spassu_backend
+    container_name: spassu_backend_prod
     restart: unless-stopped
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./backend:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py seed_data &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 core.wsgi:application"
     ports:
       - "8000:8000"
     environment:
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      DEBUG: ${DEBUG:-True}
-      SECRET_KEY: ${SECRET_KEY:-django-insecure-local-dev-spassu-secret-key-not-for-production-use}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      ENVIRONMENT: production
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-prod-spassu-secret-key-change-in-production}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend,frontend}
       POSTGRES_DB: ${POSTGRES_DB:-spassu_db}
       POSTGRES_USER: ${POSTGRES_USER:-spassu_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spassu_password}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       DATABASE_URL: ${DATABASE_URL:-postgres://spassu_user:spassu_password@db:5432/spassu_db}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost}
     depends_on:
       db:
         condition: service_healthy
     networks:
-      - spassu_network
+      - spassu_prod_network
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: development
-    container_name: spassu_frontend
+      target: production
+    container_name: spassu_frontend_prod
     restart: unless-stopped
-    command: npm run dev -- --host 0.0.0.0 --port 3000
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     ports:
-      - "3000:3000"
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+      - "3000:80"
     depends_on:
       - backend
     networks:
-      - spassu_network
+      - spassu_prod_network
 
 volumes:
-  postgres_data:
-    name: spassu_postgres_data
+  postgres_data_prod:
+    name: spassu_postgres_data_prod
 
 networks:
-  spassu_network:
-    name: spassu_network
+  spassu_prod_network:
+    name: spassu_prod_network
     driver: bridge

@@ -120,35 +120,40 @@ graph TD
 
 ## 🚀 5. Execução Rápida via Docker (Recomendado)
 
-O projeto está 100% conteinerizado e pronto para rodar em poucos minutos.
+O projeto está 100% conteinerizado e pronto para rodar em poucos minutos, contando com orquestrações dedicadas para **produção** (padrão) e **desenvolvimento local**.
 
 ### Pré-requisitos
 - [Docker](https://docs.docker.com/get-docker/) (versão 24+)
 - [Docker Compose](https://docs.docker.com/compose/) (versão 2+)
 
-### Modo Desenvolvimento (Hot-Reload)
+### Modo Produção (Padrão: Nginx + Gunicorn)
+
+O arquivo padrão `docker-compose.yml` está configurado para o ambiente de produção otimizado (Frontend compilado servido via Nginx Alpine com compressão e Backend servido via Gunicorn com múltiplos workers):
 
 ```bash
 # 1. Clone o repositório e acerte o diretório
 git clone <url-do-repositorio>
 cd projeto-spassu
 
-# 2. Suba todos os serviços em background com build
+# 2. Suba o ambiente de produção diretamente com o compose padrão:
 docker compose up --build -d
-
-# 3. Aplique as migrações no banco PostgreSQL
-docker compose exec backend python manage.py migrate
-
-# 4. Popule os dados iniciais de demonstração (seed)
-docker compose exec backend python manage.py seed_data
 ```
 
-### Modo Produção (Nginx + Gunicorn)
+> **Nota**: No modo de produção, as migrações e a carga inicial de dados (`seed_data`) são executadas automaticamente na inicialização do contêiner do backend.
 
-Para rodar a versão otimizada de produção (Frontend empacotado em Nginx Alpine e Backend com workers Gunicorn):
+### Modo Desenvolvimento (Hot-Reload com `docker-compose.local.yml`)
+
+Para desenvolvimento local com recarregamento em tempo real (hot-reload), sincronização de código e logs dinâmicos, utilize o arquivo `docker-compose.local.yml`:
 
 ```bash
-docker compose -f docker-compose.prod.yml up --build -d
+# 1. Suba os serviços em background com build (modo desenvolvimento)
+docker compose -f docker-compose.local.yml up --build -d
+
+# 2. Aplique as migrações no banco PostgreSQL (se necessário)
+docker compose -f docker-compose.local.yml exec backend python manage.py migrate
+
+# 3. Popule os dados iniciais de demonstração (seed)
+docker compose -f docker-compose.local.yml exec backend python manage.py seed_data
 ```
 
 ### URLs de Acesso
@@ -227,6 +232,8 @@ pytest
 
 # Ou executando via Docker Compose:
 docker compose exec backend pytest
+# Ou no ambiente de desenvolvimento:
+docker compose -f docker-compose.local.yml exec backend pytest
 ```
 
 Exemplo de saída:
@@ -247,27 +254,29 @@ backend/tests/test_sales_api.py::TestDocumentationEndpoints::... PASSED
 ============================= 29 passed in 0.88s ==============================
 ```
 
-### Testes do Frontend (19 Testes de Componentes e Rotas)
+### Testes do Frontend (34 Testes de Componentes e Rotas)
 
 ```bash
 # Executando localmente:
 cd frontend
-npm run test:run
+npm test -- --run
 
-# Ou executando via Docker Compose:
-docker compose exec frontend npm run test:run
+# Ou executando via Docker Compose (modo desenvolvimento):
+docker compose -f docker-compose.local.yml exec frontend npm test -- --run
 ```
 
 Exemplo de saída:
 ```text
  ✓ tests/components/Button.test.tsx (3 tests)
- ✓ tests/pages/SalesList.test.tsx (4 tests)
- ✓ tests/pages/SaleCreate.test.tsx (4 tests)
- ✓ tests/App.test.tsx (4 tests)
- ✓ tests/pages/Commissions.test.tsx (4 tests)
+ ✓ tests/components/Toast.test.tsx (3 tests)
+ ✓ tests/pages/SaleEdit.test.tsx (5 tests)
+ ✓ tests/pages/SalesList.test.tsx (7 tests)
+ ✓ tests/App.test.tsx (6 tests)
+ ✓ tests/pages/SaleCreate.test.tsx (5 tests)
+ ✓ tests/pages/Commissions.test.tsx (5 tests)
 
- Test Files  5 passed (5)
-      Tests  19 passed (19)
+ Test Files  7 passed (7)
+      Tests  34 passed (34)
 ```
 
 ### Build de Produção do Frontend
@@ -348,8 +357,8 @@ projeto-spassu/
 │       ├── plan.md                 # Plano arquitetural e de implementação
 │       ├── tasks.md                # Lista de tarefas rastreáveis (T001 - T046)
 │       └── quickstart.md           # Guia de validação ponta a ponta
-├── docker-compose.yml              # Orquestração para desenvolvimento (hot-reload)
-├── docker-compose.prod.yml         # Orquestração para produção (Nginx + Gunicorn)
+├── docker-compose.local.yml        # Orquestração para desenvolvimento local (hot-reload)
+├── docker-compose.yml              # Orquestração padrão para produção (Nginx + Gunicorn)
 └── README.md                       # Documentação principal do projeto
 ```
 
