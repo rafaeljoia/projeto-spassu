@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { SaleCreate } from '../../src/pages/SaleCreate';
@@ -205,6 +205,36 @@ describe('Página SaleCreate (Nova Venda)', () => {
         })
       );
       expect(onSuccess).toHaveBeenCalledWith(99);
+    });
+  });
+
+  it('permite buscar produto digitando código ou descrição no campo de busca', async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<SaleCreate />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: /caderno universitário/i })).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText(/digite o código ou nome do produto/i);
+
+    // 1. Busca por código "CAN"
+    await user.type(searchInput, 'CAN');
+    const listbox = await screen.findByRole('listbox');
+    const option = within(listbox).getByText('CAN-002 - Caneta Azul 1.0mm');
+    expect(option).toBeInTheDocument();
+
+    // 2. Clica no produto encontrado no dropdown
+    await user.click(option);
+    expect(searchInput).toHaveValue('CAN-002 - Caneta Azul 1.0mm');
+
+    // 3. Adiciona produto à venda
+    const addButton = screen.getByRole('button', { name: /adicionar/i });
+    await user.click(addButton);
+
+    // Confirma que foi adicionado na tabela de itens
+    await waitFor(() => {
+      expect(screen.getAllByText(/caneta azul/i).length).toBeGreaterThanOrEqual(2);
     });
   });
 });
