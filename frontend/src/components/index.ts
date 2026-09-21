@@ -23,3 +23,5 @@ export type { NavbarProps, NavItem } from './Navbar';
 export { Toast } from './Toast';
 export type { ToastProps } from './Toast';
 
+export { DateTimePicker } from './DateTimePicker';
+export type { DateTimePickerProps } from './DateTimePicker';

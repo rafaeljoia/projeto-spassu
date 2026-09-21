@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Trash2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useSales } from '../../hooks/useSales';
 import { saleService } from '../../services/saleService';
-import { Button } from '../../components';
+import { Button, DateTimePicker } from '../../components';
 import { formatCurrency } from '../../services/api';
 import { Product, SaleCreatePayload } from '../../types';
 import styles from './SaleEdit.module.css';
@@ -458,15 +458,13 @@ export const SaleEdit: FC<SaleEditProps> = ({ onSuccess, onCancel, onTitleChange
               <label htmlFor="sold-at" className={styles.label}>
                 Data e Hora da Venda
               </label>
-              <input
+              <DateTimePicker
                 id="sold-at"
-                type="datetime-local"
-                className={styles.fieldInput}
+                label="Data e Hora da Venda"
                 value={soldAt}
+                onChange={setSoldAt}
                 disabled={true}
                 readOnly={true}
-                aria-label="Data e Hora da Venda"
-                title="A data e hora da venda não podem ser alteradas"
               />
               <span className={styles.helperText}>
                 A data original da venda é mantida para preservação das regras de comissão.

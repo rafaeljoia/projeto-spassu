@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, FC, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, ArrowLeft, AlertCircle, ChevronDown, X } from 'lucide-react';
 import { useSales } from '../../hooks/useSales';
-import { Button } from '../../components';
+import { Button, DateTimePicker } from '../../components';
 import { formatCurrency, formatPercentage } from '../../services/api';
 import { Product } from '../../types';
 import styles from './SaleCreate.module.css';
@@ -617,13 +617,12 @@ export const SaleCreate: FC<SaleCreateProps> = ({ onSuccess, onCancel }) => {
               <label htmlFor="sold-at-input" className={styles.label}>
                 Data e Hora da Venda <span className={styles.required}>*</span>
               </label>
-              <input
+              <DateTimePicker
                 id="sold-at-input"
-                type="datetime-local"
-                className={styles.fieldInput}
-                required
+                label="Data e Hora da Venda"
                 value={soldAt}
-                onChange={(e) => setSoldAt(e.target.value)}
+                onChange={setSoldAt}
+                required
               />
               {activeDayRule && (
                 <span className={styles.helperText}>

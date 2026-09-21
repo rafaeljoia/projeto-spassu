@@ -1,0 +1,307 @@
+/* ==============================================================================
+   PROJETO SPASSU - DATETIMEPICKER COMPONENT
+   Mesmo visual e estilo de Commissions/DatePicker.tsx com suporte a Data e Hora
+   ============================================================================== */
+
+.datePickerContainer {
+  position: relative;
+  width: 100%;
+}
+
+.dateInputWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 44px; /* Padrão de formulário Figma #833:54 / #853:57 (44px) */
+  padding: 0 12px 0 16px;
+  background-color: #ffffff;
+  border: 1px solid #a6a6a6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.dateInputWrapper:hover:not(.disabledWrapper) {
+  border-color: #777777;
+}
+
+.inputFocused {
+  border-color: var(--color-brand-primary, #00585e);
+  box-shadow: 0 0 0 2px var(--color-primary-focus, rgba(0, 88, 94, 0.2));
+}
+
+.disabledWrapper {
+  background-color: #f8f8f8 !important;
+  border-color: #cccccc !important;
+  cursor: not-allowed !important;
+}
+
+.dateInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 14px;
+  color: #000000;
+  outline: none;
+  padding: 0;
+}
+
+.dateInput:disabled,
+.dateInput[readonly] {
+  color: #686868;
+  cursor: not-allowed;
+}
+
+.dateInput::placeholder {
+  color: #a4a4a4;
+  font-size: 14px;
+}
+
+.calendarIconBtn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--color-brand-primary, #00585e);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.calendarIconBtn:disabled {
+  color: #a4a4a4;
+  cursor: not-allowed;
+}
+
+/* Popover do Calendário com Data e Hora */
+.calendarPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1000;
+  width: 260px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 14px;
+  animation: fadeIn 0.15s ease-out;
+  box-sizing: border-box;
+}
+
+.calendarPopover::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 32px;
+  width: 10px;
+  height: 10px;
+  background-color: #ffffff;
+  transform: rotate(45deg);
+  border-top: 1px solid #e0e0e0;
+  border-left: 1px solid #e0e0e0;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.monthTitle {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: #212529;
+  text-transform: lowercase;
+}
+
+.navArrows {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.arrowBtn {
+  background: transparent;
+  border: none;
+  padding: 2px;
+  color: #555555;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.arrowBtn:hover {
+  background-color: #f0f0f0;
+  color: #000000;
+}
+
+.weekdaysRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.weekdayName {
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: #888888;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.dayButton {
+  width: 28px;
+  height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 13px;
+  color: #333333;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.12s ease;
+}
+
+.dayButton:hover:not(.selectedDay):not(:disabled) {
+  background-color: #f0f7f7;
+}
+
+.selectedDay {
+  background-color: var(--color-brand-primary, #00585e) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.disabledDay {
+  color: #c4c4c4 !important;
+  background: transparent !important;
+  cursor: not-allowed !important;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.dimmedDay {
+  width: 28px;
+  height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 13px;
+  color: #b8b8b8;
+  user-select: none;
+}
+
+/* Seção de Horário no Popover */
+.timeSection {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timeLabelWrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #42474a;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.timeIcon {
+  color: var(--color-brand-primary, #00585e);
+}
+
+.timeInputsWrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timeUnitInput {
+  width: 44px;
+  height: 28px;
+  text-align: center;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.timeUnitInput:focus {
+  border-color: var(--color-brand-primary, #00585e);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(0, 88, 94, 0.15);
+}
+
+.timeSeparator {
+  font-weight: 700;
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.timeConfirmBtn {
+  height: 28px;
+  padding: 0 10px;
+  background-color: var(--color-brand-primary, #00585e);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Roboto', var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeConfirmBtn:hover {
+  background-color: var(--color-brand-primary-dark, #003538);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
