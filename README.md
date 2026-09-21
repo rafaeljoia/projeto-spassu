@@ -10,9 +10,11 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
+
 ---
 
-## 📌 1. Visão Geral
+
+## 📌 1. Visão Geral Projeto
 
 Este projeto consiste em uma solução corporativa completa de **Gestão de Vendas e Apuração Dinâmica de Comissões** desenvolvida para atender às operações diárias de uma rede de papelarias.
 
