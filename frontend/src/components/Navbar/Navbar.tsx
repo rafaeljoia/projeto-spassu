@@ -33,7 +33,7 @@ export const getTitleForPath = (path: string, invoiceNumber?: string): string =>
     return 'Relatório de Comissões';
   }
   if (path === '/vendas' || path === '/') {
-    return 'Listagem de Vendas';
+    return 'Vendas';
   }
   return 'SPASSU';
 };
@@ -84,7 +84,7 @@ export const Navbar: FC<NavbarProps> = ({
   return (
     <>
       <header className={styles.header}>
-        <div className={`container ${styles.inner}`}>
+        <div className={styles.inner}>
           {/* Lado Esquerdo: Menu Sanduíche (Figma #830:149) + Logo */}
           <div className={styles.leftSection}>
             <button

@@ -50,7 +50,7 @@ describe('App Client-Side Routing', () => {
 
     expect(screen.getByText('SPASSU')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Vendas' })).toBeInTheDocument();
     });
   });
 
@@ -58,7 +58,7 @@ describe('App Client-Side Routing', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Vendas' })).toBeInTheDocument();
     });
 
     // Botão de menu sanduíche com o ícone fiel do Figma
@@ -80,7 +80,7 @@ describe('App Client-Side Routing', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Vendas' })).toBeInTheDocument();
     });
 
     // O acesso a nova venda é feito pelo botão de ação na própria tela de listagem de vendas ("Inserir nova Venda")
@@ -97,7 +97,7 @@ describe('App Client-Side Routing', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Vendas' })).toBeInTheDocument();
     });
 
     // Navega para nova venda pelo botão de ação
@@ -113,7 +113,7 @@ describe('App Client-Side Routing', () => {
     await user.click(backBtn);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Vendas' })).toBeInTheDocument();
     });
   });
 
@@ -122,7 +122,7 @@ describe('App Client-Side Routing', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Listagem de Vendas' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Vendas' })).toBeInTheDocument();
     });
 
     const commissionsLink = screen.getByRole('link', { name: /comissões/i });
